@@ -2,9 +2,7 @@ import os
 import json
 import logging
 import asyncio
-import threading
 from datetime import datetime
-from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from telegram.error import Conflict
@@ -18,33 +16,12 @@ logger = logging.getLogger(__name__)
 
 # ========== CONFIG ==========
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8543681427:AAF23GGo0ioNexLCDCGHhh0WmIfcV7l2xPM")
-PORT = int(os.getenv("PORT", 8080))
 ADMIN_IDS = [7420938284]
 TON_WALLET = "UQB37g1e9sANIvwdJd3mmxtqveSBae0y-bpqX7DXQPH3c9Lb"
 TELEBIRR_NUMBER = "0940980555"
 
 USER_DATA_FILE = "users.json"
 ORDER_DATA_FILE = "orders.json"
-
-# ========== HEALTH CHECK SERVER ==========
-class HealthHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        self.wfile.write(b'Bot is running!')
-    
-    def log_message(self, format, *args):
-        pass  # Suppress logs
-
-def start_health_server():
-    """Run health check server in a separate thread"""
-    try:
-        server = HTTPServer(('0.0.0.0', PORT), HealthHandler)
-        logger.info(f"Health server running on port {PORT}")
-        server.serve_forever()
-    except Exception as e:
-        logger.error(f"Health server error: {e}")
 
 # ========== SERVICES ==========
 SERVICES = {
@@ -55,7 +32,7 @@ SERVICES = {
         'desc': "Custom phishing pages undetectable by browsers. SSL support. Clones any website instantly.",
         'delivery': "2-5 minutes",
         'fields': ['target_url'],
-        'field_labels': {'target_url': "Send the URL you want to clone:"}
+        'field_labels': {'target_url': "📝 Send the URL you want to clone:"}
     },
     'ddos': {
         'name': "🔥 DDoS Attack Panel",
@@ -65,30 +42,30 @@ SERVICES = {
         'delivery': "5-10 minutes",
         'fields': ['target', 'attack_type', 'duration'],
         'field_labels': {
-            'target': "Send target IP/Website:",
-            'attack_type': "Select attack type:",
-            'duration': "Select duration:"
+            'target': "📝 Send target IP/Website:",
+            'attack_type': "📝 Select attack type:",
+            'duration': "📝 Select duration:"
         }
     },
     'android_rat': {
         'name': "🦠 Android RAT Builder",
         'price_etb': 400,
         'price_usdt': 6,
-        'desc': "Fully undetectable Android RAT. Bind with any app. Access: files, camera, mic, SMS, location, contacts.",
+        'desc': "Fully undetectable Android RAT. Bind with any app. Access: files, camera, mic, SMS, location.",
         'delivery': "10-15 minutes",
         'fields': ['app_name'],
-        'field_labels': {'app_name': "Send app name to bind with:"}
+        'field_labels': {'app_name': "📝 Send app name to bind with:"}
     },
     'sms_bomber': {
         'name': "💣 SMS/OTP Bomber",
         'price_etb': 250,
         'price_usdt': 4,
-        'desc': "Ultimate SMS bomber. 1000+ SMS/min. Works worldwide. Perfect for OTP harassment.",
+        'desc': "Ultimate SMS bomber. 1000+ SMS/min. Works worldwide. OTP harassment tool.",
         'delivery': "Instant",
         'fields': ['target_number', 'duration'],
         'field_labels': {
-            'target_number': "Send target phone number:",
-            'duration': "Select duration:"
+            'target_number': "📝 Send target phone number:",
+            'duration': "📝 Select duration:"
         }
     },
     'social_hack': {
@@ -99,8 +76,8 @@ SERVICES = {
         'delivery': "15-30 minutes",
         'fields': ['platform', 'target_profile'],
         'field_labels': {
-            'platform': "Select platform:",
-            'target_profile': "Send profile link/username:"
+            'platform': "📝 Select platform:",
+            'target_profile': "📝 Send profile link/username:"
         }
     },
     'telegram_hack': {
@@ -110,7 +87,7 @@ SERVICES = {
         'desc': "Full Telegram account access. Get all messages, contacts, media, and files.",
         'delivery': "20-30 minutes",
         'fields': ['victim_number'],
-        'field_labels': {'victim_number': "Send victim's phone number:"}
+        'field_labels': {'victim_number': "📝 Send victim's phone number:"}
     },
     'email_hack': {
         'name': "📧 Email Account Access",
@@ -119,7 +96,7 @@ SERVICES = {
         'desc': "Access Gmail, Yahoo, Outlook accounts. All emails and attachments included.",
         'delivery': "10-20 minutes",
         'fields': ['target_email'],
-        'field_labels': {'target_email': "Send target email address:"}
+        'field_labels': {'target_email': "📝 Send target email address:"}
     },
     'website_hack': {
         'name': "🌐 Website Takeover",
@@ -128,7 +105,7 @@ SERVICES = {
         'desc': "Full website takeover. Deface, steal databases, inject malware, or redirect traffic.",
         'delivery': "30-60 minutes",
         'fields': ['target_site'],
-        'field_labels': {'target_site': "Send target website URL:"}
+        'field_labels': {'target_site': "📝 Send target website URL:"}
     },
     'crypto_drainer': {
         'name': "💰 Crypto Wallet Drainer",
@@ -137,11 +114,11 @@ SERVICES = {
         'desc': "Drain any crypto wallet. MetaMask, TrustWallet, Phantom, Exodus supported.",
         'delivery': "15-20 minutes",
         'fields': ['target_address'],
-        'field_labels': {'target_address': "Send target wallet address:"}
+        'field_labels': {'target_address': "📝 Send target wallet address:"}
     }
 }
 
-# ========== TOOLS ==========
+# ========== TOOLS SHOP ==========
 TOOLS = {
     'dark_rat': {
         'name': "DarkRAT v4.2",
@@ -233,12 +210,12 @@ TEXTS = {
         'services': "🛠 *SERVICES*",
         'tools': "🛒 *TOOLS SHOP*",
         'payment_method': "💳 *Payment*\n\n{amount_etb} Birr / {amount_usdt} USDT\n\nChoose payment:",
-        'telebirr_pay': "📱 *Telebirr Payment*\n\nSend: {amount_etb} Birr\nTo: `{number}`\nName: Naol\n\nSend screenshot here after payment",
-        'ton_pay': "💰 *TON (USDT)*\n\nSend: {amount_usdt} USDT\nNetwork: TON\nAddress: `{wallet}`\n\nSend screenshot after payment",
+        'telebirr_pay': "📱 *Telebirr Payment*\n\nSend: {amount_etb} Birr\nTo: `{number}`\nName: Naol\n\n⚠️ Send screenshot here after payment",
+        'ton_pay': "💰 *TON (USDT)*\n\nSend: {amount_usdt} USDT\nNetwork: TON\nAddress: `{wallet}`\n\n⚠️ Send screenshot after payment",
         'processing': "⏳ *Processing Payment...*\n\nVerifying your transaction...\nThis takes 5-15 minutes.\n\nYou will be notified automatically.",
         'confirmed': "✅ *Payment Verified*\n\nProcessing your order...\nEstimated delivery: {delivery_time}\n\nWe will update you shortly.",
         'completed': "✅ *Order Fulfilled*\n\nYour request has been processed.\n\nThank you for your business.",
-        'tool_delivered': "✅ *Purchase Complete*\n\n{name}\n\nYour download is ready.\n\nThank you for your purchase.",
+        'tool_delivered': "✅ *Purchase Complete*\n\n{name}\n\n📥 Your download is ready.\n\nThank you for your purchase.",
         'ask_field': "{label}",
         'back': "« Back",
         'services_list': "Available services:",
@@ -255,12 +232,12 @@ TEXTS = {
         'services': "🛠 *አገልግሎቶች*",
         'tools': "🛒 *የመሳሪያዎች ሱቅ*",
         'payment_method': "💳 *ክፍያ*\n\n{amount_etb} ብር / {amount_usdt} USDT\n\nየክፍያ ዘዴ ይምረጡ:",
-        'telebirr_pay': "📱 *የቴሌብር ክፍያ*\n\nላክ: {amount_etb} ብር\nወደ: `{number}`\nስም: ናኦል\n\nከከፈሉ በኋላ ስክሪንሾት ይላኩ",
-        'ton_pay': "💰 *TON (USDT)*\n\nላክ: {amount_usdt} USDT\nኔትዎርክ: TON\nአድራሻ: `{wallet}`\n\nከከፈሉ በኋላ ስክሪንሾት ይላኩ",
+        'telebirr_pay': "📱 *የቴሌብር ክፍያ*\n\nላክ: {amount_etb} ብር\nወደ: `{number}`\nስም: ናኦል\n\n⚠️ ከከፈሉ በኋላ ስክሪንሾት ይላኩ",
+        'ton_pay': "💰 *TON (USDT)*\n\nላክ: {amount_usdt} USDT\nኔትዎርክ: TON\nአድራሻ: `{wallet}`\n\n⚠️ ከከፈሉ በኋላ ስክሪንሾት ይላኩ",
         'processing': "⏳ *ክፍያ በመስራት ላይ...*\n\nትራንዛክሽንዎን እያረጋገጥን ነው...\nይህ 5-15 ደቂቃ ይወስዳል።\n\nበራስ-ሰር እናሳውቅዎታለን።",
         'confirmed': "✅ *ክፍያ ተረጋግጧል*\n\nትዕዛዝዎን እየሰራን ነው...\nየሚፈጀው ጊዜ: {delivery_time}\n\nበቅርቡ እናዘምንዎታለን።",
         'completed': "✅ *ትዕዛዝ ተጠናቋል*\n\nጥያቄዎ ተፈጽሟል።\n\nስለተጠቀሙ እናመሰግናለን።",
-        'tool_delivered': "✅ *ግዢ ተጠናቋል*\n\n{name}\n\nማውረድ ዝግጁ ነው።\n\nስለገዙ እናመሰግናለን።",
+        'tool_delivered': "✅ *ግዢ ተጠናቋል*\n\n{name}\n\n📥 ማውረድ ዝግጁ ነው።\n\nስለገዙ እናመሰግናለን።",
         'ask_field': "{label}",
         'back': "« ተመለስ",
         'services_list': "የሚገኙ አገልግሎቶች:",
@@ -273,7 +250,7 @@ TEXTS = {
     }
 }
 
-# ========== DATA ==========
+# ========== DATA MANAGEMENT ==========
 def load_data(file):
     try:
         if os.path.exists(file):
@@ -287,8 +264,8 @@ def save_data(data, file):
     try:
         with open(file, 'w') as f:
             json.dump(data, f, indent=2)
-    except:
-        pass
+    except Exception as e:
+        logger.error(f"Save error: {e}")
 
 user_data = load_data(USER_DATA_FILE)
 order_data = load_data(ORDER_DATA_FILE)
@@ -303,13 +280,22 @@ def get_text(user_id, key, **kwargs):
             pass
     return text
 
+def reset_user(user_id):
+    if user_id in user_data:
+        user_data[user_id]['current_item'] = None
+        user_data[user_id]['current_item_type'] = None
+        user_data[user_id]['current_field'] = 0
+        user_data[user_id]['order_data'] = {}
+        user_data[user_id]['pending_payment'] = None
+        save_data(user_data, USER_DATA_FILE)
+
 # ========== OPTIONS ==========
 ATTACK_TYPES = [
     ("Layer 7 - HTTP Flood", "l7_http"),
     ("Layer 4 - SYN Flood", "l4_syn"),
     ("UDP Amplification", "udp_amp"),
     ("DNS Flood", "dns_flood"),
-    ("Mixed Attack", "mixed")
+    ("Mixed Attack (L4+L7)", "mixed")
 ]
 
 DURATIONS = [
@@ -325,22 +311,15 @@ SMS_DURATIONS = [
 PLATFORMS = [
     ("Facebook", "fb"), ("Instagram", "ig"),
     ("TikTok", "tt"), ("Snapchat", "sc"),
-    ("Telegram", "tg"), ("WhatsApp", "wa")
+    ("Telegram", "tg"), ("WhatsApp", "wa"),
+    ("Twitter/X", "tw"), ("Gmail", "gm")
 ]
 
 # ========== ERROR HANDLER ==========
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Error: {context.error}")
 
-def reset_user(user_id):
-    user_data[user_id]['current_item'] = None
-    user_data[user_id]['current_item_type'] = None
-    user_data[user_id]['current_field'] = 0
-    user_data[user_id]['order_data'] = {}
-    user_data[user_id]['pending_payment'] = None
-    save_data(user_data, USER_DATA_FILE)
-
-# ========== HANDLERS ==========
+# ========== BOT HANDLERS ==========
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
@@ -420,6 +399,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     except Exception as e:
         logger.error(f"Button error: {e}")
+        try:
+            await query.edit_message_text("Error. Use /start to restart.")
+        except:
+            pass
 
 async def show_main_menu(query, user_id):
     keyboard = [
@@ -438,7 +421,7 @@ async def show_services_menu(query, user_id):
     keyboard = []
     for key, svc in SERVICES.items():
         keyboard.append([InlineKeyboardButton(
-            f"{svc['name']} - {svc['price_etb']} Birr",
+            f"{svc['name']} - {svc['price_etb']} Birr / {svc['price_usdt']}$",
             callback_data=f'svc_{key}'
         )])
     
@@ -550,7 +533,7 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.send_photo(
                         admin_id,
                         photo.file_id,
-                        caption=f"📸 New Payment\n\n👤 {first_name} (@{username})\n🆔 `{user_id}`\n\n/approve {user_id}",
+                        caption=f"📸 *New Payment*\n\n👤 {first_name} (@{username})\n🆔 `{user_id}`\n\n/approve {user_id}",
                         parse_mode='Markdown'
                     )
                 except:
@@ -819,7 +802,7 @@ async def show_orders(query, user_id):
         parse_mode='Markdown'
     )
 
-# ========== ADMIN ==========
+# ========== ADMIN COMMANDS ==========
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in ADMIN_IDS:
         return
@@ -860,10 +843,6 @@ async def orders_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== MAIN ==========
 def main():
-    # Start health check server in background
-    health_thread = threading.Thread(target=start_health_server, daemon=True)
-    health_thread.start()
-    
     # Build application
     app = Application.builder().token(BOT_TOKEN).build()
     
@@ -883,7 +862,7 @@ def main():
     app.add_handler(MessageHandler(filters.PHOTO, handle_screenshot))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
-    logger.info("Bot starting...")
+    logger.info("🤖 Bot is starting...")
     
     # Run bot
     app.run_polling(drop_pending_updates=True)
