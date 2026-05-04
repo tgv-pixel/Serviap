@@ -2,9 +2,10 @@ services:
   - type: worker
     name: telegram-bot
     env: python
+    region: oregon  # or any region you prefer
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
+    plan: free
     envVars:
       - key: BOT_TOKEN
         value: 8543681427:AAF23GGo0ioNexLCDCGHhh0WmIfcV7l2xPM
-    plan: free
