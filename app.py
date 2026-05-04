@@ -2,10 +2,11 @@ import os
 import json
 import logging
 import asyncio
+import time
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
-from telegram.error import Conflict
+from telegram.error import Conflict, NetworkError, TimedOut
 
 # ========== LOGGING ==========
 logging.basicConfig(
@@ -273,33 +274,37 @@ TEXTS = {
     }
 }
 
-# ========== DATA ==========
+# ========== DATA MANAGEMENT ==========
 def load_data(file):
+    """Load JSON data from file"""
     try:
         if os.path.exists(file):
-            with open(file, 'r') as f:
+            with open(file, 'r', encoding='utf-8') as f:
                 return json.load(f)
-    except:
-        pass
+    except Exception as e:
+        logger.error(f"Error loading {file}: {e}")
     return {}
 
 def save_data(data, file):
+    """Save data to JSON file"""
     try:
-        with open(file, 'w') as f:
-            json.dump(data, f, indent=2)
-    except:
-        pass
+        with open(file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logger.error(f"Error saving {file}: {e}")
 
+# Initialize data
 user_data = load_data(USER_DATA_FILE)
 order_data = load_data(ORDER_DATA_FILE)
 
 def get_text(user_id, key, **kwargs):
+    """Get localized text for user"""
     lang = user_data.get(str(user_id), {}).get('lang', 'en')
     text = TEXTS.get(lang, TEXTS['en']).get(key, TEXTS['en'].get(key, key))
     if kwargs and isinstance(text, str):
         try:
             text = text.format(**kwargs)
-        except:
+        except KeyError:
             pass
     return text
 
@@ -331,13 +336,19 @@ PLATFORMS = [
 
 # ========== ERROR HANDLER ==========
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.error(f"Error: {context.error}")
+    """Handle errors"""
+    logger.error(f"Update {update} caused error: {context.error}")
+    
     if isinstance(context.error, Conflict):
-        logger.error("Conflict: Another instance running!")
-        return
+        logger.error("Conflict error: Another bot instance is running!")
+    elif isinstance(context.error, NetworkError):
+        logger.error("Network error occurred")
+    elif isinstance(context.error, TimedOut):
+        logger.error("Request timed out")
 
 # ========== BOT HANDLERS ==========
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /start command"""
     user_id = str(update.effective_user.id)
     
     if user_id not in user_data:
@@ -363,6 +374,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle all button callbacks"""
     query = update.callback_query
     await query.answer()
     user_id = str(update.effective_user.id)
@@ -438,11 +450,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Button error: {e}")
         try:
-            await query.edit_message_text("Error. Use /start to restart.")
+            await query.edit_message_text("An error occurred. Please use /start to restart.")
         except:
             pass
 
 async def show_main_menu(query, user_id):
+    """Display main menu"""
     keyboard = [
         [InlineKeyboardButton("🛠 Services", callback_data='menu_services')],
         [InlineKeyboardButton("🛒 Tools Shop", callback_data='menu_tools')],
@@ -456,6 +469,7 @@ async def show_main_menu(query, user_id):
     )
 
 async def show_services_menu(query, user_id):
+    """Display services list"""
     keyboard = []
     for key, svc in SERVICES.items():
         keyboard.append([
@@ -474,6 +488,7 @@ async def show_services_menu(query, user_id):
     )
 
 async def show_tools_menu(query, user_id):
+    """Display tools shop"""
     keyboard = []
     for key, tool in TOOLS.items():
         keyboard.append([
@@ -492,6 +507,7 @@ async def show_tools_menu(query, user_id):
     )
 
 async def show_payment(query, user_id, item_key, item_type):
+    """Display payment options"""
     item = SERVICES.get(item_key) if item_type == 'service' else TOOLS.get(item_key)
     if not item:
         return
@@ -526,6 +542,7 @@ async def show_payment(query, user_id, item_key, item_type):
     )
 
 async def pay_telebirr(query, user_id, item_key):
+    """Handle Telebirr payment"""
     item = SERVICES.get(item_key) or TOOLS.get(item_key)
     if not item:
         return
@@ -547,6 +564,7 @@ async def pay_telebirr(query, user_id, item_key):
     )
 
 async def pay_ton(query, user_id, item_key):
+    """Handle TON payment"""
     item = SERVICES.get(item_key) or TOOLS.get(item_key)
     if not item:
         return
@@ -568,6 +586,7 @@ async def pay_ton(query, user_id, item_key):
     )
 
 async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle payment screenshot"""
     user_id = str(update.effective_user.id)
     username = update.effective_user.username or "No username"
     first_name = update.effective_user.first_name or "Anonymous"
@@ -577,12 +596,18 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
             photo = update.message.photo[-1]
             caption = update.message.caption or ""
             
+            # Send processing message first
+            processing_msg = await update.message.reply_text(
+                get_text(user_id, 'processing'),
+                parse_mode='Markdown'
+            )
+            
             # Forward to admin
             for admin_id in ADMIN_IDS:
                 try:
                     await context.bot.send_photo(
-                        admin_id,
-                        photo.file_id,
+                        chat_id=admin_id,
+                        photo=photo.file_id,
                         caption=f"📸 *New Payment*\n\n"
                                f"👤 {first_name} (@{username})\n"
                                f"🆔 `{user_id}`\n"
@@ -590,26 +615,21 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                f"/approve {user_id}",
                         parse_mode='Markdown'
                     )
-                except:
-                    pass
+                except Exception as e:
+                    logger.error(f"Failed to send to admin {admin_id}: {e}")
             
-            # Send processing message
-            await update.message.reply_text(
-                get_text(user_id, 'processing'),
-                parse_mode='Markdown'
-            )
-            
-            # Auto-process after delay
+            # Auto-process payment
             await asyncio.sleep(3)
             await process_payment(user_id, context)
             
     except Exception as e:
         logger.error(f"Screenshot error: {e}")
+        await update.message.reply_text("Error processing screenshot. Please try again or contact support.")
 
 async def process_payment(user_id, context):
     """Process payment and deliver service/tool"""
     try:
-        pending = user_data[user_id].get('pending_payment', {})
+        pending = user_data.get(user_id, {}).get('pending_payment', {})
         item_key = pending.get('item_key')
         item_type = user_data[user_id].get('current_item_type', 'service')
         
@@ -635,8 +655,8 @@ async def process_payment(user_id, context):
         
         # Send confirmation
         await context.bot.send_message(
-            user_id,
-            get_text(user_id, 'confirmed').format(
+            chat_id=user_id,
+            text=get_text(user_id, 'confirmed').format(
                 delivery_time=item.get('delivery', 'soon')
             ),
             parse_mode='Markdown'
@@ -646,8 +666,8 @@ async def process_payment(user_id, context):
             # Tools: instant delivery
             await asyncio.sleep(2)
             await context.bot.send_message(
-                user_id,
-                get_text(user_id, 'tool_delivered').format(name=item['name']),
+                chat_id=user_id,
+                text=get_text(user_id, 'tool_delivered').format(name=item['name']),
                 parse_mode='Markdown'
             )
             reset_user(user_id)
@@ -726,7 +746,7 @@ async def ask_next_field(query, user_id, item_key):
         await complete_order(query, user_id, item_key)
 
 async def ask_next_field_direct(user_id, context, item_key):
-    """Ask next field directly"""
+    """Ask next field directly via message"""
     item = SERVICES.get(item_key)
     if not item:
         return
@@ -739,12 +759,12 @@ async def ask_next_field_direct(user_id, context, item_key):
         label = item['field_labels'].get(field_name, field_name)
         
         if field_name in ['attack_type', 'duration', 'platform']:
-            # These will be handled by buttons when the user selects
+            # These are handled by buttons when user interacts
             pass
         
         await context.bot.send_message(
-            user_id,
-            get_text(user_id, 'ask_field').format(label=label),
+            chat_id=user_id,
+            text=get_text(user_id, 'ask_field').format(label=label),
             parse_mode='Markdown'
         )
 
@@ -796,8 +816,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def show_field_buttons(update, user_id, field_name, item_key):
     """Show button options for a field"""
-    lang = user_data[user_id].get('lang', 'en')
-    
     if field_name == 'attack_type':
         keyboard = [[InlineKeyboardButton(name, callback_data=f'opt_{val}')] for name, val in ATTACK_TYPES]
         await update.message.reply_text(
@@ -886,16 +904,19 @@ async def show_orders(query, user_id):
 
 def reset_user(user_id):
     """Reset user state"""
-    user_data[user_id]['current_item'] = None
-    user_data[user_id]['current_item_type'] = None
-    user_data[user_id]['current_field'] = 0
-    user_data[user_id]['order_data'] = {}
-    user_data[user_id]['pending_payment'] = None
-    save_data(user_data, USER_DATA_FILE)
+    if user_id in user_data:
+        user_data[user_id]['current_item'] = None
+        user_data[user_id]['current_item_type'] = None
+        user_data[user_id]['current_field'] = 0
+        user_data[user_id]['order_data'] = {}
+        user_data[user_id]['pending_payment'] = None
+        save_data(user_data, USER_DATA_FILE)
 
 # ========== ADMIN COMMANDS ==========
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to manually approve payment"""
     if update.effective_user.id not in ADMIN_IDS:
+        await update.message.reply_text("❌ Unauthorized")
         return
     
     try:
@@ -903,23 +924,35 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if target_user in user_data:
             await process_payment(target_user, context)
             await update.message.reply_text(f"✅ Processed payment for {target_user}")
-    except:
-        await update.message.reply_text("/approve <user_id>")
+        else:
+            await update.message.reply_text("❌ User not found")
+    except (IndexError, ValueError):
+        await update.message.reply_text("Usage: /approve <user_id>")
 
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to reject payment"""
     if update.effective_user.id not in ADMIN_IDS:
+        await update.message.reply_text("❌ Unauthorized")
         return
     
     try:
         target_user = str(context.args[0])
         reset_user(target_user)
-        await context.bot.send_message(target_user, "❌ Payment failed. Please try again or contact support.")
-        await update.message.reply_text(f"✅ Rejected {target_user}")
-    except:
-        await update.message.reply_text("/reject <user_id>")
+        try:
+            await context.bot.send_message(
+                chat_id=target_user,
+                text="❌ Payment failed. Please try again or contact support."
+            )
+        except:
+            pass
+        await update.message.reply_text(f"✅ Rejected payment for {target_user}")
+    except (IndexError, ValueError):
+        await update.message.reply_text("Usage: /reject <user_id>")
 
 async def orders_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to view all orders"""
     if update.effective_user.id not in ADMIN_IDS:
+        await update.message.reply_text("❌ Unauthorized")
         return
     
     if not order_data:
@@ -936,46 +969,74 @@ async def orders_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== MAIN ==========
 def main():
-    """Start bot"""
+    """Start bot with health check server and retry logic"""
+    logger.info("Initializing bot...")
+    
+    # Build application
     app = Application.builder().token(BOT_TOKEN).build()
     
-    # Error handler
+    # Add error handler
     app.add_error_handler(error_handler)
     
-    # Commands
+    # Add command handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("approve", approve))
     app.add_handler(CommandHandler("reject", reject))
     app.add_handler(CommandHandler("orders", orders_cmd))
     
-    # Callbacks
+    # Add callback handler
     app.add_handler(CallbackQueryHandler(button_handler))
     
-    # Screenshots
+    # Add message handlers
     app.add_handler(MessageHandler(filters.PHOTO, handle_screenshot))
-    
-    # Text messages
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
-    # Web server for Render health check
-    from http.server import HTTPServer, BaseHTTPRequestHandler
+    # Start health check server for Render
     import threading
+    from http.server import HTTPServer, BaseHTTPRequestHandler
     
-    class HealthCheck(BaseHTTPRequestHandler):
+    class HealthCheckHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
             self.end_headers()
-            self.wfile.write(b"OK")
+            self.wfile.write(b'Bot is running')
+        
+        def log_message(self, format, *args):
+            pass  # Suppress HTTP server logs
     
     def run_health_server():
-        server = HTTPServer(('0.0.0.0', int(os.getenv('PORT', 8080))), HealthCheck)
+        port = int(os.getenv('PORT', 8080))
+        server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+        logger.info(f"Health check server running on port {port}")
         server.serve_forever()
     
+    # Start health check in background
     health_thread = threading.Thread(target=run_health_server, daemon=True)
     health_thread.start()
     
-    logger.info("Bot started...")
-    app.run_polling(drop_pending_updates=True)
+    # Run bot with retry logic
+    logger.info("Starting bot polling...")
+    
+    while True:
+        try:
+            app.run_polling(
+                drop_pending_updates=True,
+                close_loop=False,
+                allowed_updates=Update.ALL_TYPES
+            )
+        except Conflict as e:
+            logger.error(f"Conflict error: {e}")
+            logger.info("Waiting 10 seconds before retry...")
+            time.sleep(10)
+        except NetworkError as e:
+            logger.error(f"Network error: {e}")
+            logger.info("Waiting 5 seconds before retry...")
+            time.sleep(5)
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            logger.info("Waiting 5 seconds before retry...")
+            time.sleep(5)
 
 if __name__ == "__main__":
     main()
