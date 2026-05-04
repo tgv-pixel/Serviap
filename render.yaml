@@ -7,4 +7,6 @@ services:
     envVars:
       - key: BOT_TOKEN
         value: 8543681427:AAF23GGo0ioNexLCDCGHhh0WmIfcV7l2xPM
+      - key: PORT
+        value: 8080
     plan: free
