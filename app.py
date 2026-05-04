@@ -3,6 +3,7 @@ import json
 import logging
 import asyncio
 import time
+import sys
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
@@ -10,13 +11,14 @@ from telegram.error import Conflict, NetworkError, TimedOut
 
 # ========== LOGGING ==========
 logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
 # ========== CONFIG ==========
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8543681427:AAF23GGo0ioNexLCDCGHhh0WmIfcV7l2xPM")
+PORT = int(os.getenv("PORT", 8080))
 ADMIN_IDS = [7420938284]
 TON_WALLET = "UQB37g1e9sANIvwdJd3mmxtqveSBae0y-bpqX7DXQPH3c9Lb"
 TELEBIRR_NUMBER = "0940980555"
@@ -276,7 +278,6 @@ TEXTS = {
 
 # ========== DATA MANAGEMENT ==========
 def load_data(file):
-    """Load JSON data from file"""
     try:
         if os.path.exists(file):
             with open(file, 'r', encoding='utf-8') as f:
@@ -286,7 +287,6 @@ def load_data(file):
     return {}
 
 def save_data(data, file):
-    """Save data to JSON file"""
     try:
         with open(file, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
@@ -298,7 +298,6 @@ user_data = load_data(USER_DATA_FILE)
 order_data = load_data(ORDER_DATA_FILE)
 
 def get_text(user_id, key, **kwargs):
-    """Get localized text for user"""
     lang = user_data.get(str(user_id), {}).get('lang', 'en')
     text = TEXTS.get(lang, TEXTS['en']).get(key, TEXTS['en'].get(key, key))
     if kwargs and isinstance(text, str):
@@ -335,20 +334,18 @@ PLATFORMS = [
 ]
 
 # ========== ERROR HANDLER ==========
-async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle errors"""
-    logger.error(f"Update {update} caused error: {context.error}")
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logger.error(f"Exception while handling an update: {context.error}")
     
     if isinstance(context.error, Conflict):
-        logger.error("Conflict error: Another bot instance is running!")
+        logger.error("Conflict error - another instance might be running")
     elif isinstance(context.error, NetworkError):
         logger.error("Network error occurred")
     elif isinstance(context.error, TimedOut):
         logger.error("Request timed out")
 
 # ========== BOT HANDLERS ==========
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /start command"""
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.effective_user.id)
     
     if user_id not in user_data:
@@ -373,8 +370,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle all button callbacks"""
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
     user_id = str(update.effective_user.id)
@@ -423,7 +419,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await pay_ton(query, user_id, item_key)
         
         elif data.startswith('opt_'):
-            # Handle option selection (attack type, duration, etc.)
             option_value = data.replace('opt_', '')
             item_key = user_data[user_id].get('current_item')
             item = SERVICES.get(item_key) or TOOLS.get(item_key)
@@ -437,7 +432,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     user_data[user_id]['order_data'][field_name] = option_value
                     save_data(user_data, USER_DATA_FILE)
                     
-                    # Move to next field
                     user_data[user_id]['current_field'] = current_field_idx + 1
                     save_data(user_data, USER_DATA_FILE)
                     
@@ -455,7 +449,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
 
 async def show_main_menu(query, user_id):
-    """Display main menu"""
     keyboard = [
         [InlineKeyboardButton("🛠 Services", callback_data='menu_services')],
         [InlineKeyboardButton("🛒 Tools Shop", callback_data='menu_tools')],
@@ -469,7 +462,6 @@ async def show_main_menu(query, user_id):
     )
 
 async def show_services_menu(query, user_id):
-    """Display services list"""
     keyboard = []
     for key, svc in SERVICES.items():
         keyboard.append([
@@ -488,7 +480,6 @@ async def show_services_menu(query, user_id):
     )
 
 async def show_tools_menu(query, user_id):
-    """Display tools shop"""
     keyboard = []
     for key, tool in TOOLS.items():
         keyboard.append([
@@ -507,7 +498,6 @@ async def show_tools_menu(query, user_id):
     )
 
 async def show_payment(query, user_id, item_key, item_type):
-    """Display payment options"""
     item = SERVICES.get(item_key) if item_type == 'service' else TOOLS.get(item_key)
     if not item:
         return
@@ -542,7 +532,6 @@ async def show_payment(query, user_id, item_key, item_type):
     )
 
 async def pay_telebirr(query, user_id, item_key):
-    """Handle Telebirr payment"""
     item = SERVICES.get(item_key) or TOOLS.get(item_key)
     if not item:
         return
@@ -564,7 +553,6 @@ async def pay_telebirr(query, user_id, item_key):
     )
 
 async def pay_ton(query, user_id, item_key):
-    """Handle TON payment"""
     item = SERVICES.get(item_key) or TOOLS.get(item_key)
     if not item:
         return
@@ -585,8 +573,7 @@ async def pay_ton(query, user_id, item_key):
         parse_mode='Markdown'
     )
 
-async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle payment screenshot"""
+async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.effective_user.id)
     username = update.effective_user.username or "No username"
     first_name = update.effective_user.first_name or "Anonymous"
@@ -596,8 +583,7 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
             photo = update.message.photo[-1]
             caption = update.message.caption or ""
             
-            # Send processing message first
-            processing_msg = await update.message.reply_text(
+            await update.message.reply_text(
                 get_text(user_id, 'processing'),
                 parse_mode='Markdown'
             )
@@ -624,10 +610,8 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
     except Exception as e:
         logger.error(f"Screenshot error: {e}")
-        await update.message.reply_text("Error processing screenshot. Please try again or contact support.")
 
 async def process_payment(user_id, context):
-    """Process payment and deliver service/tool"""
     try:
         pending = user_data.get(user_id, {}).get('pending_payment', {})
         item_key = pending.get('item_key')
@@ -689,7 +673,6 @@ async def process_payment(user_id, context):
         logger.error(f"Process payment error: {e}")
 
 async def ask_next_field(query, user_id, item_key):
-    """Ask next field via callback"""
     item = SERVICES.get(item_key) or TOOLS.get(item_key)
     if not item:
         return
@@ -701,11 +684,8 @@ async def ask_next_field(query, user_id, item_key):
         field_name = fields[current_idx]
         label = item['field_labels'].get(field_name, field_name)
         
-        # Check if this is a special option field
         if field_name == 'attack_type':
-            keyboard = []
-            for name, val in ATTACK_TYPES:
-                keyboard.append([InlineKeyboardButton(name, callback_data=f'opt_{val}')])
+            keyboard = [[InlineKeyboardButton(name, callback_data=f'opt_{val}')] for name, val in ATTACK_TYPES]
             keyboard.append([InlineKeyboardButton(get_text(user_id, 'back'), callback_data='main_menu')])
             await query.edit_message_text(
                 get_text(user_id, 'choose_attack'),
@@ -713,13 +693,8 @@ async def ask_next_field(query, user_id, item_key):
                 parse_mode='Markdown'
             )
         elif field_name == 'duration':
-            if 'sms' in item_key.lower():
-                durations = SMS_DURATIONS
-            else:
-                durations = DURATIONS
-            keyboard = []
-            for name, val in durations:
-                keyboard.append([InlineKeyboardButton(name, callback_data=f'opt_{val}')])
+            durations = SMS_DURATIONS if 'sms' in item_key.lower() else DURATIONS
+            keyboard = [[InlineKeyboardButton(name, callback_data=f'opt_{val}')] for name, val in durations]
             keyboard.append([InlineKeyboardButton(get_text(user_id, 'back'), callback_data='main_menu')])
             await query.edit_message_text(
                 get_text(user_id, 'choose_duration'),
@@ -727,9 +702,7 @@ async def ask_next_field(query, user_id, item_key):
                 parse_mode='Markdown'
             )
         elif field_name == 'platform':
-            keyboard = []
-            for name, val in PLATFORMS:
-                keyboard.append([InlineKeyboardButton(name, callback_data=f'opt_{val}')])
+            keyboard = [[InlineKeyboardButton(name, callback_data=f'opt_{val}')] for name, val in PLATFORMS]
             keyboard.append([InlineKeyboardButton(get_text(user_id, 'back'), callback_data='main_menu')])
             await query.edit_message_text(
                 get_text(user_id, 'choose_platform'),
@@ -742,11 +715,9 @@ async def ask_next_field(query, user_id, item_key):
                 parse_mode='Markdown'
             )
     else:
-        # All fields filled
         await complete_order(query, user_id, item_key)
 
 async def ask_next_field_direct(user_id, context, item_key):
-    """Ask next field directly via message"""
     item = SERVICES.get(item_key)
     if not item:
         return
@@ -758,18 +729,13 @@ async def ask_next_field_direct(user_id, context, item_key):
         field_name = fields[current_idx]
         label = item['field_labels'].get(field_name, field_name)
         
-        if field_name in ['attack_type', 'duration', 'platform']:
-            # These are handled by buttons when user interacts
-            pass
-        
         await context.bot.send_message(
             chat_id=user_id,
             text=get_text(user_id, 'ask_field').format(label=label),
             parse_mode='Markdown'
         )
 
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle user text input for order fields"""
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.effective_user.id)
     text = update.message.text
     
@@ -789,16 +755,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if current_idx < len(fields):
         field_name = fields[current_idx]
         
-        # Skip option fields (handled by buttons)
         if field_name in ['attack_type', 'duration', 'platform']:
             return
         
-        # Save the value
         user_data[user_id]['order_data'][field_name] = text
         user_data[user_id]['current_field'] = current_idx + 1
         save_data(user_data, USER_DATA_FILE)
         
-        # Ask next field
         if user_data[user_id]['current_field'] < len(fields):
             next_field = fields[user_data[user_id]['current_field']]
             next_label = item['field_labels'].get(next_field, next_field)
@@ -811,11 +774,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     parse_mode='Markdown'
                 )
         else:
-            # All fields completed
             await complete_order_direct(update, user_id, item_key)
 
 async def show_field_buttons(update, user_id, field_name, item_key):
-    """Show button options for a field"""
     if field_name == 'attack_type':
         keyboard = [[InlineKeyboardButton(name, callback_data=f'opt_{val}')] for name, val in ATTACK_TYPES]
         await update.message.reply_text(
@@ -824,15 +785,10 @@ async def show_field_buttons(update, user_id, field_name, item_key):
             parse_mode='Markdown'
         )
     elif field_name == 'duration':
-        if 'sms' in item_key.lower():
-            durations = SMS_DURATIONS
-            prefix = 'choose_sms_duration'
-        else:
-            durations = DURATIONS
-            prefix = 'choose_duration'
+        durations = SMS_DURATIONS if 'sms' in item_key.lower() else DURATIONS
         keyboard = [[InlineKeyboardButton(name, callback_data=f'opt_{val}')] for name, val in durations]
         await update.message.reply_text(
-            get_text(user_id, prefix),
+            get_text(user_id, 'choose_duration'),
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -845,10 +801,8 @@ async def show_field_buttons(update, user_id, field_name, item_key):
         )
 
 async def complete_order(query, user_id, item_key):
-    """Complete order via callback"""
     order_details = user_data[user_id].get('order_data', {})
     
-    # Update order with details
     if user_id in order_data and order_data[user_id]:
         order_data[user_id][-1]['details'] = order_details
         save_data(order_data, ORDER_DATA_FILE)
@@ -861,7 +815,6 @@ async def complete_order(query, user_id, item_key):
     )
 
 async def complete_order_direct(update, user_id, item_key):
-    """Complete order directly"""
     order_details = user_data[user_id].get('order_data', {})
     
     if user_id in order_data and order_data[user_id]:
@@ -876,7 +829,6 @@ async def complete_order_direct(update, user_id, item_key):
     )
 
 async def show_orders(query, user_id):
-    """Show user's orders"""
     orders = order_data.get(user_id, [])
     
     if not orders:
@@ -887,10 +839,9 @@ async def show_orders(query, user_id):
         return
     
     msg = ""
-    for i, order in enumerate(orders[-5:], 1):  # Last 5 orders
+    for i, order in enumerate(orders[-5:], 1):
         item = SERVICES.get(order['item']) or TOOLS.get(order['item'])
         name = item['name'] if item else order['item']
-        status = order.get('status', 'completed')
         time_str = order.get('time', '')[:10]
         msg += f"{i}. {name} - ✅ {time_str}\n"
     
@@ -903,7 +854,6 @@ async def show_orders(query, user_id):
     )
 
 def reset_user(user_id):
-    """Reset user state"""
     if user_id in user_data:
         user_data[user_id]['current_item'] = None
         user_data[user_id]['current_item_type'] = None
@@ -913,10 +863,8 @@ def reset_user(user_id):
         save_data(user_data, USER_DATA_FILE)
 
 # ========== ADMIN COMMANDS ==========
-async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Admin command to manually approve payment"""
+async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user.id not in ADMIN_IDS:
-        await update.message.reply_text("❌ Unauthorized")
         return
     
     try:
@@ -929,10 +877,8 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /approve <user_id>")
 
-async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Admin command to reject payment"""
+async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user.id not in ADMIN_IDS:
-        await update.message.reply_text("❌ Unauthorized")
         return
     
     try:
@@ -949,10 +895,8 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /reject <user_id>")
 
-async def orders_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Admin command to view all orders"""
+async def orders_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user.id not in ADMIN_IDS:
-        await update.message.reply_text("❌ Unauthorized")
         return
     
     if not order_data:
@@ -967,76 +911,69 @@ async def orders_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(msg[:4000], parse_mode='Markdown')
 
+# ========== HEALTH CHECK SERVER ==========
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Bot is running')
+    
+    def log_message(self, format, *args):
+        pass
+
+def run_health_server():
+    server = HTTPServer(('0.0.0.0', PORT), HealthCheckHandler)
+    logger.info(f"Health check server running on port {PORT}")
+    server.serve_forever()
+
 # ========== MAIN ==========
 def main():
-    """Start bot with health check server and retry logic"""
-    logger.info("Initializing bot...")
+    logger.info("Starting bot initialization...")
     
     # Build application
-    app = Application.builder().token(BOT_TOKEN).build()
+    application = Application.builder().token(BOT_TOKEN).build()
     
     # Add error handler
-    app.add_error_handler(error_handler)
+    application.add_error_handler(error_handler)
     
-    # Add command handlers
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("approve", approve))
-    app.add_handler(CommandHandler("reject", reject))
-    app.add_handler(CommandHandler("orders", orders_cmd))
+    # Add handlers
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("approve", approve))
+    application.add_handler(CommandHandler("reject", reject))
+    application.add_handler(CommandHandler("orders", orders_cmd))
+    application.add_handler(CallbackQueryHandler(button_handler))
+    application.add_handler(MessageHandler(filters.PHOTO, handle_screenshot))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
-    # Add callback handler
-    app.add_handler(CallbackQueryHandler(button_handler))
-    
-    # Add message handlers
-    app.add_handler(MessageHandler(filters.PHOTO, handle_screenshot))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-    
-    # Start health check server for Render
+    # Start health check server in a separate thread
     import threading
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    
-    class HealthCheckHandler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
-            self.end_headers()
-            self.wfile.write(b'Bot is running')
-        
-        def log_message(self, format, *args):
-            pass  # Suppress HTTP server logs
-    
-    def run_health_server():
-        port = int(os.getenv('PORT', 8080))
-        server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
-        logger.info(f"Health check server running on port {port}")
-        server.serve_forever()
-    
-    # Start health check in background
     health_thread = threading.Thread(target=run_health_server, daemon=True)
     health_thread.start()
     
-    # Run bot with retry logic
-    logger.info("Starting bot polling...")
+    logger.info("Bot is starting polling...")
     
+    # Run the bot with retry logic
     while True:
         try:
-            app.run_polling(
+            application.run_polling(
                 drop_pending_updates=True,
-                close_loop=False,
                 allowed_updates=Update.ALL_TYPES
             )
         except Conflict as e:
             logger.error(f"Conflict error: {e}")
-            logger.info("Waiting 10 seconds before retry...")
-            time.sleep(10)
+            logger.info("Waiting 15 seconds before retry...")
+            time.sleep(15)
         except NetworkError as e:
             logger.error(f"Network error: {e}")
-            logger.info("Waiting 5 seconds before retry...")
-            time.sleep(5)
+            logger.info("Waiting 10 seconds before retry...")
+            time.sleep(10)
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
-            logger.info("Waiting 5 seconds before retry...")
-            time.sleep(5)
+            logger.info("Waiting 10 seconds before retry...")
+            time.sleep(10)
 
 if __name__ == "__main__":
     main()
