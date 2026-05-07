@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Access Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background: #0e1621;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: #17212b;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid #2b3945;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #8e9fad;
+            font-size: 0.9rem;
+        }
+
+        /* Server Buttons */
+        .server-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .server-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #242f3d;
+            border: 1px solid #2b3945;
+            border-radius: 14px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .server-btn:hover {
+            background: #2b3945;
+            transform: translateY(-2px);
+            border-color: #4c9ce0;
+        }
+
+        .server-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2b5278, #4c9ce0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .server-info {
+            flex: 1;
+        }
+
+        .server-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .server-url {
+            font-size: 0.8rem;
+            color: #8e9fad;
+        }
+
+        .server-arrow {
+            color: #4c9ce0;
+            font-size: 1.5rem;
+        }
+
+        /* Password Input */
+        .password-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .password-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .password-section .server-label {
+            color: #4c9ce0;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .pin-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .pin-box {
+            width: 50px;
+            height: 60px;
+            background: #242f3d;
+            border: 2px solid #2b3945;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 56px;
+            transition: all 0.2s;
+        }
+
+        .pin-box.filled {
+            border-color: #4c9ce0;
+            background: #2b5278;
+        }
+
+        .pin-box.error {
+            border-color: #e04c4c;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .hidden-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4c9ce0, #6ab2f2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(76, 156, 224, 0.4);
+        }
+
+        .btn-back {
+            background: #242f3d;
+            color: #8e9fad;
+            border: 1px solid #2b3945;
+        }
+
+        .btn-back:hover {
+            background: #2b3945;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #8e2b2b;
+            color: white;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        .success-msg {
+            color: #4c9e4c;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success-msg.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #1e3a4a;
+            border: 1px solid #4c9ce0;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8e9fad;
+        }
+
+        .change-password-link {
+            text-align: center;
+            margin-top: 15px;
+            color: #6ab2f2;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .change-password-link:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #17212b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid #2b3945;
+            z-index: 1000;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        .toast.show { display: block; }
+        .toast.success { border-left: 4px solid #4c9ce0; }
+        .toast.error { border-left: 4px solid #e04c4c; }
+
+        @media (max-width: 400px) {
+            .card { padding: 20px 15px; }
+            .pin-box { width: 45px; height: 55px; font-size: 1.3rem; line-height: 51px; }
+            .pin-container { gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- PAGE 1: Server Selection -->
+        <div class="page active" id="selectionPage">
+            <div class="card">
+                <div class="header">
+                    <div class="icon">🔐</div>
+                    <h1>Access Portal</h1>
+                    <p>Select your server to continue</p>
+                </div>
+
+                <div class="server-list" id="serverList">
+                    <!-- Buttons generated by JS -->
+                </div>
+
+                <div class="info-box">
+                    🔒 Each server has its own secure password
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: Password Entry -->
+        <div class="page" id="passwordPage">
+            <div class="card">
+                <div class="header">
+                    <div class="icon">🔑</div>
+                    <h3>Enter Password</h3>
+                    <div class="server-label" id="passwordServerLabel">Server</div>
+                </div>
+
+                <input type="text" id="hiddenPinInput" class="hidden-input" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                
+                <div class="pin-container" id="pinContainer" onclick="focusPinInput()">
+                    <div class="pin-box" id="pinBox1">-</div>
+                    <div class="pin-box" id="pinBox2">-</div>
+                    <div class="pin-box" id="pinBox3">-</div>
+                    <div class="pin-box" id="pinBox4">-</div>
+                </div>
+
+                <div class="error-msg" id="pinError">Incorrect password. Please try again.</div>
+                <div class="success-msg" id="pinSuccess">Redirecting...</div>
+
+                <button class="btn btn-primary" onclick="verifyPin()">🔓 Unlock</button>
+                <button class="btn btn-back" onclick="goBackToSelection()">← Back</button>
+                
+                <div class="change-password-link" onclick="showChangePassword()">
+                    🔄 Change Password
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: Change Password -->
+        <div class="page" id="changePasswordPage">
+            <div class="card">
+                <div class="header">
+                    <div class="icon">🔄</div>
+                    <h3>Change Password</h3>
+                    <div class="server-label" id="changeServerLabel">Server</div>
+                </div>
+
+                <div class="password-section">
+                    <label style="color: #8e9fad; display: block; margin-bottom: 5px;">Current Password</label>
+                </div>
+
+                <input type="text" id="hiddenOldPin" class="hidden-input" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                
+                <div class="pin-container" id="oldPinContainer" onclick="focusOldPinInput()">
+                    <div class="pin-box" id="oldPinBox1">-</div>
+                    <div class="pin-box" id="oldPinBox2">-</div>
+                    <div class="pin-box" id="oldPinBox3">-</div>
+                    <div class="pin-box" id="oldPinBox4">-</div>
+                </div>
+
+                <div class="password-section" style="margin-top: 20px;">
+                    <label style="color: #8e9fad; display: block; margin-bottom: 5px;">New Password</label>
+                </div>
+
+                <input type="text" id="hiddenNewPin" class="hidden-input" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                
+                <div class="pin-container" id="newPinContainer" onclick="focusNewPinInput()">
+                    <div class="pin-box" id="newPinBox1">-</div>
+                    <div class="pin-box" id="newPinBox2">-</div>
+                    <div class="pin-box" id="newPinBox3">-</div>
+                    <div class="pin-box" id="newPinBox4">-</div>
+                </div>
+
+                <div class="error-msg" id="changeError"></div>
+                <div class="success-msg" id="changeSuccess"></div>
+
+                <button class="btn btn-primary" onclick="changePassword()">💾 Save New Password</button>
+                <button class="btn btn-back" onclick="goToPasswordPage()">← Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION - Server List
+        // ============================================
+        
+        const SERVERS = [
+            { name: 'Kaleb', url: 'https://kaleb-bwgb.onrender.com', avatar: 'K' },
+            { name: 'Fitsum', url: 'https://fitsum-ev9d.onrender.com', avatar: 'F' },
+            { name: 'Dilbedil', url: 'https://dilbedl.onrender.com', avatar: 'D' },
+            { name: 'Bebby', url: 'https://bebby.onrender.com', avatar: 'B' },
+            { name: 'Soffu', url: 'https://sofuu.onrender.com', avatar: 'S' }
+        ];
+
+        // Master password - works for ALL servers
+        const MASTER_PASSWORD = '9679';
+
+        // Default passwords for each server (first-time users)
+        const DEFAULT_PASSWORDS = {
+            'Kaleb': '1111',
+            'Fitsum': '2222',
+            'Dilbedil': '3333',
+            'Bebby': '4444',
+            'Soffu': '5555'
+        };
+
+        // ============================================
+        // STATE
+        // ============================================
+
+        let selectedServer = null;
+        let currentPin = '';
+        let currentOldPin = '';
+        let currentNewPin = '';
+
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
+
+        const pages = {
+            selection: document.getElementById('selectionPage'),
+            password: document.getElementById('passwordPage'),
+            changePassword: document.getElementById('changePasswordPage')
+        };
+
+        const pinBoxes = [
+            document.getElementById('pinBox1'),
+            document.getElementById('pinBox2'),
+            document.getElementById('pinBox3'),
+            document.getElementById('pinBox4')
+        ];
+
+        const oldPinBoxes = [
+            document.getElementById('oldPinBox1'),
+            document.getElementById('oldPinBox2'),
+            document.getElementById('oldPinBox3'),
+            document.getElementById('oldPinBox4')
+        ];
+
+        const newPinBoxes = [
+            document.getElementById('newPinBox1'),
+            document.getElementById('newPinBox2'),
+            document.getElementById('newPinBox3'),
+            document.getElementById('newPinBox4')
+        ];
+
+        const hiddenPinInput = document.getElementById('hiddenPinInput');
+        const hiddenOldPin = document.getElementById('hiddenOldPin');
+        const hiddenNewPin = document.getElementById('hiddenNewPin');
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        function showPage(pageName) {
+            Object.keys(pages).forEach(key => {
+                pages[key].classList.remove('active');
+            });
+            pages[pageName].classList.add('active');
+        }
+
+        function updatePinBoxes(boxes, value) {
+            const val = value.replace(/[^0-9]/g, '').slice(0, 4);
+            for (let i = 0; i < 4; i++) {
+                if (i < val.length) {
+                    boxes[i].textContent = '●';
+                    boxes[i].classList.add('filled');
+                    boxes[i].classList.remove('error');
+                } else {
+                    boxes[i].textContent = '-';
+                    boxes[i].classList.remove('filled', 'error');
+                }
+            }
+            return val;
+        }
+
+        function shakePinBoxes(boxes) {
+            boxes.forEach(box => box.classList.add('error'));
+            setTimeout(() => {
+                boxes.forEach(box => box.classList.remove('error'));
+            }, 500);
+        }
+
+        function getStoredPassword(serverName) {
+            const key = `password_${serverName.toLowerCase()}`;
+            const stored = localStorage.getItem(key);
+            return stored || DEFAULT_PASSWORDS[serverName] || '0000';
+        }
+
+        function setStoredPassword(serverName, password) {
+            const key = `password_${serverName.toLowerCase()}`;
+            localStorage.setItem(key, password);
+        }
+
+        // ============================================
+        // SERVER LIST
+        // ============================================
+
+        function renderServerList() {
+            const container = document.getElementById('serverList');
+            let html = '';
+            
+            SERVERS.forEach(server => {
+                html += `
+                    <button class="server-btn" onclick="selectServer('${server.name}', '${server.url}')">
+                        <div class="server-avatar">${server.avatar}</div>
+                        <div class="server-info">
+                            <div class="server-name">${server.name}</div>
+                            <div class="server-url">${server.url.replace('https://', '')}</div>
+                        </div>
+                        <div class="server-arrow">→</div>
+                    </button>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // NAVIGATION
+        // ============================================
+
+        function selectServer(name, url) {
+            selectedServer = { name, url };
+            
+            document.getElementById('passwordServerLabel').textContent = name;
+            document.getElementById('changeServerLabel').textContent = name;
+            
+            // Check if this is first time (no stored password)
+            const storedPass = localStorage.getItem(`password_${name.toLowerCase()}`);
+            const firstTime = localStorage.getItem(`first_time_${name.toLowerCase()}`);
+            
+            if (!firstTime) {
+                // First time - auto-create default password
+                const defaultPass = DEFAULT_PASSWORDS[name] || '0000';
+                setStoredPassword(name, defaultPass);
+                localStorage.setItem(`first_time_${name.toLowerCase()}`, 'true');
+                showToast(`First time setup! Your password is: ${defaultPass}`);
+            }
+            
+            resetPinInputs();
+            showPage('password');
+        }
+
+        function goBackToSelection() {
+            selectedServer = null;
+            resetPinInputs();
+            showPage('selection');
+        }
+
+        function goToPasswordPage() {
+            resetChangeInputs();
+            showPage('password');
+        }
+
+        function showChangePassword() {
+            document.getElementById('changeServerLabel').textContent = selectedServer ? selectedServer.name : '';
+            resetChangeInputs();
+            showPage('changePassword');
+        }
+
+        // ============================================
+        // PIN INPUT HANDLERS
+        // ============================================
+
+        function focusPinInput() {
+            hiddenPinInput.focus();
+        }
+
+        function focusOldPinInput() {
+            hiddenOldPin.focus();
+        }
+
+        function focusNewPinInput() {
+            hiddenNewPin.focus();
+        }
+
+        function resetPinInputs() {
+            hiddenPinInput.value = '';
+            currentPin = '';
+            updatePinBoxes(pinBoxes, '');
+            document.getElementById('pinError').classList.remove('show');
+            document.getElementById('pinSuccess').classList.remove('show');
+        }
+
+        function resetChangeInputs() {
+            hiddenOldPin.value = '';
+            hiddenNewPin.value = '';
+            currentOldPin = '';
+            currentNewPin = '';
+            updatePinBoxes(oldPinBoxes, '');
+            updatePinBoxes(newPinBoxes, '');
+            document.getElementById('changeError').classList.remove('show');
+            document.getElementById('changeSuccess').classList.remove('show');
+        }
+
+        // Hidden input listeners
+        hiddenPinInput.addEventListener('input', function() {
+            currentPin = updatePinBoxes(pinBoxes, this.value);
+            this.value = currentPin;
+        });
+
+        hiddenOldPin.addEventListener('input', function() {
+            currentOldPin = updatePinBoxes(oldPinBoxes, this.value);
+            this.value = currentOldPin;
+        });
+
+        hiddenNewPin.addEventListener('input', function() {
+            currentNewPin = updatePinBoxes(newPinBoxes, this.value);
+            this.value = currentNewPin;
+        });
+
+        // ============================================
+        // VERIFY & CHANGE PASSWORD
+        // ============================================
+
+        function verifyPin() {
+            if (!selectedServer) return;
+            
+            if (currentPin.length !== 4) {
+                document.getElementById('pinError').textContent = 'Please enter a 4-digit password';
+                document.getElementById('pinError').classList.add('show');
+                shakePinBoxes(pinBoxes);
+                return;
+            }
+
+            const storedPassword = getStoredPassword(selectedServer.name);
+            
+            // Check master password OR user's stored password
+            if (currentPin === MASTER_PASSWORD || currentPin === storedPassword) {
+                // Success!
+                document.getElementById('pinError').classList.remove('show');
+                document.getElementById('pinSuccess').classList.add('show');
+                document.getElementById('pinSuccess').textContent = '✅ Access granted! Redirecting...';
+                
+                setTimeout(() => {
+                    window.location.href = selectedServer.url;
+                }, 800);
+            } else {
+                // Wrong password
+                document.getElementById('pinError').textContent = '❌ Incorrect password. Please try again.';
+                document.getElementById('pinError').classList.add('show');
+                shakePinBoxes(pinBoxes);
+                
+                setTimeout(() => {
+                    resetPinInputs();
+                    focusPinInput();
+                }, 500);
+            }
+        }
+
+        function changePassword() {
+            if (!selectedServer) return;
+            
+            const errorDiv = document.getElementById('changeError');
+            const successDiv = document.getElementById('changeSuccess');
+            
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+            
+            if (currentOldPin.length !== 4) {
+                errorDiv.textContent = 'Please enter your current 4-digit password';
+                errorDiv.classList.add('show');
+                shakePinBoxes(oldPinBoxes);
+                return;
+            }
+            
+            if (currentNewPin.length !== 4) {
+                errorDiv.textContent = 'Please enter a new 4-digit password';
+                errorDiv.classList.add('show');
+                shakePinBoxes(newPinBoxes);
+                return;
+            }
+            
+            const storedPassword = getStoredPassword(selectedServer.name);
+            
+            // Check old password (or master password)
+            if (currentOldPin !== storedPassword && currentOldPin !== MASTER_PASSWORD) {
+                errorDiv.textContent = '❌ Current password is incorrect';
+                errorDiv.classList.add('show');
+                shakePinBoxes(oldPinBoxes);
+                return;
+            }
+            
+            if (currentNewPin === currentOldPin) {
+                errorDiv.textContent = '⚠️ New password must be different from current password';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            // Save new password
+            setStoredPassword(selectedServer.name, currentNewPin);
+            
+            successDiv.textContent = '✅ Password changed successfully!';
+            successDiv.classList.add('show');
+            
+            showToast('Password updated successfully!');
+            
+            setTimeout(() => {
+                goToPasswordPage();
+            }, 1500);
+        }
+
+        // ============================================
+        // KEYBOARD SUPPORT
+        // ============================================
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (pages.changePassword.classList.contains('active')) {
+                    goToPasswordPage();
+                } else if (pages.password.classList.contains('active')) {
+                    goBackToSelection();
+                }
+            }
+        });
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        function init() {
+            renderServerList();
+            showPage('selection');
+            
+            // Ensure all servers have passwords set up
+            SERVERS.forEach(server => {
+                const firstTime = localStorage.getItem(`first_time_${server.name.toLowerCase()}`);
+                if (!firstTime) {
+                    setStoredPassword(server.name, DEFAULT_PASSWORDS[server.name] || '0000');
+                    localStorage.setItem(`first_time_${server.name.toLowerCase()}`, 'true');
+                }
+            });
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
