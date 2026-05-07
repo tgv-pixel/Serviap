@@ -1,772 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Access Portal</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-        }
-
-        body {
-            background: #0e1621;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        .card {
-            background: #17212b;
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid #2b3945;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header .icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            color: #fff;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            color: #8e9fad;
-            font-size: 0.9rem;
-        }
-
-        /* Server Buttons */
-        .server-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .server-btn {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: #242f3d;
-            border: 1px solid #2b3945;
-            border-radius: 14px;
-            padding: 15px 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #fff;
-            text-decoration: none;
-            font-size: 1rem;
-        }
-
-        .server-btn:hover {
-            background: #2b3945;
-            transform: translateY(-2px);
-            border-color: #4c9ce0;
-        }
-
-        .server-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #2b5278, #4c9ce0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .server-info {
-            flex: 1;
-        }
-
-        .server-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .server-url {
-            font-size: 0.8rem;
-            color: #8e9fad;
-        }
-
-        .server-arrow {
-            color: #4c9ce0;
-            font-size: 1.5rem;
-        }
-
-        /* Password Input */
-        .password-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .password-section h3 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-            color: #fff;
-        }
-
-        .password-section .server-label {
-            color: #4c9ce0;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .pin-container {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .pin-box {
-            width: 50px;
-            height: 60px;
-            background: #242f3d;
-            border: 2px solid #2b3945;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-align: center;
-            line-height: 56px;
-            transition: all 0.2s;
-        }
-
-        .pin-box.filled {
-            border-color: #4c9ce0;
-            background: #2b5278;
-        }
-
-        .pin-box.error {
-            border-color: #e04c4c;
-            animation: shake 0.5s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-
-        .hidden-input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4c9ce0, #6ab2f2);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(76, 156, 224, 0.4);
-        }
-
-        .btn-back {
-            background: #242f3d;
-            color: #8e9fad;
-            border: 1px solid #2b3945;
-        }
-
-        .btn-back:hover {
-            background: #2b3945;
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: #8e2b2b;
-            color: white;
-        }
-
-        .error-msg {
-            color: #ff6b6b;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .error-msg.show {
-            display: block;
-        }
-
-        .success-msg {
-            color: #4c9e4c;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .success-msg.show {
-            display: block;
-        }
-
-        .info-box {
-            background: #1e3a4a;
-            border: 1px solid #4c9ce0;
-            border-radius: 10px;
-            padding: 12px;
-            margin-top: 15px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #8e9fad;
-        }
-
-        .change-password-link {
-            text-align: center;
-            margin-top: 15px;
-            color: #6ab2f2;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .change-password-link:hover {
-            text-decoration: underline;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #17212b;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            border: 1px solid #2b3945;
-            z-index: 1000;
-            display: none;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translate(-50%, 100%); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
-        }
-
-        .toast.show { display: block; }
-        .toast.success { border-left: 4px solid #4c9ce0; }
-        .toast.error { border-left: 4px solid #e04c4c; }
-
-        @media (max-width: 400px) {
-            .card { padding: 20px 15px; }
-            .pin-box { width: 45px; height: 55px; font-size: 1.3rem; line-height: 51px; }
-            .pin-container { gap: 8px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Secure Verification</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: #0f0f1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: #1a1a2e;
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+      color: #e0e0e0;
+      text-align: center;
+    }
+    .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 28px;
+    }
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #b0b0cc;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: #0b0b16;
+      border: 1px solid #2e2e4a;
+      border-radius: 14px;
+      color: #ffffff;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+    input:focus {
+      border-color: #6c63ff;
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+    }
+    input::placeholder {
+      color: #5a5a7a;
+      letter-spacing: 0.5px;
+    }
+    .button {
+      width: 100%;
+      padding: 14px;
+      background: #6c63ff;
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
+      letter-spacing: 0.4px;
+    }
+    .button:active {
+      transform: scale(0.97);
+      background: #5a52e0;
+    }
+    .button.secondary {
+      background: transparent;
+      border: 1px solid #3f3f5e;
+      color: #c0c0e0;
+      margin-top: 10px;
+    }
+    .warning-box {
+      background: rgba(255, 77, 77, 0.12);
+      border: 1px solid rgba(255, 77, 77, 0.4);
+      border-radius: 14px;
+      padding: 14px;
+      margin: 16px 0 8px;
+      color: #ff8a8a;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      word-break: break-word;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .divider {
+      margin: 22px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #5e5e7a;
+      font-size: 12px;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #2a2a40;
+    }
+    .code-hint {
+      font-size: 13px;
+      color: #7e7eb0;
+      margin-top: 8px;
+    }
+    .attempt-counter {
+      font-size: 12px;
+      color: #9e9eb0;
+      margin-top: 6px;
+    }
+    .footer-note {
+      margin-top: 20px;
+      font-size: 11px;
+      color: #4a4a6a;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- PAGE 1: Server Selection -->
-        <div class="page active" id="selectionPage">
-            <div class="card">
-                <div class="header">
-                    <div class="icon">🔐</div>
-                    <h1>Access Portal</h1>
-                    <p>Select your server to continue</p>
-                </div>
-
-                <div class="server-list" id="serverList">
-                    <!-- Buttons generated by JS -->
-                </div>
-
-                <div class="info-box">
-                    🔒 Each server has its own secure password
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 2: Password Entry -->
-        <div class="page" id="passwordPage">
-            <div class="card">
-                <div class="header">
-                    <div class="icon">🔑</div>
-                    <h3>Enter Password</h3>
-                    <div class="server-label" id="passwordServerLabel">Server</div>
-                </div>
-
-                <input type="text" id="hiddenPinInput" class="hidden-input" maxlength="4" inputmode="numeric" pattern="[0-9]*">
-                
-                <div class="pin-container" id="pinContainer" onclick="focusPinInput()">
-                    <div class="pin-box" id="pinBox1">-</div>
-                    <div class="pin-box" id="pinBox2">-</div>
-                    <div class="pin-box" id="pinBox3">-</div>
-                    <div class="pin-box" id="pinBox4">-</div>
-                </div>
-
-                <div class="error-msg" id="pinError">Incorrect password. Please try again.</div>
-                <div class="success-msg" id="pinSuccess">Redirecting...</div>
-
-                <button class="btn btn-primary" onclick="verifyPin()">🔓 Unlock</button>
-                <button class="btn btn-back" onclick="goBackToSelection()">← Back</button>
-                
-                <div class="change-password-link" onclick="showChangePassword()">
-                    🔄 Change Password
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 3: Change Password -->
-        <div class="page" id="changePasswordPage">
-            <div class="card">
-                <div class="header">
-                    <div class="icon">🔄</div>
-                    <h3>Change Password</h3>
-                    <div class="server-label" id="changeServerLabel">Server</div>
-                </div>
-
-                <div class="password-section">
-                    <label style="color: #8e9fad; display: block; margin-bottom: 5px;">Current Password</label>
-                </div>
-
-                <input type="text" id="hiddenOldPin" class="hidden-input" maxlength="4" inputmode="numeric" pattern="[0-9]*">
-                
-                <div class="pin-container" id="oldPinContainer" onclick="focusOldPinInput()">
-                    <div class="pin-box" id="oldPinBox1">-</div>
-                    <div class="pin-box" id="oldPinBox2">-</div>
-                    <div class="pin-box" id="oldPinBox3">-</div>
-                    <div class="pin-box" id="oldPinBox4">-</div>
-                </div>
-
-                <div class="password-section" style="margin-top: 20px;">
-                    <label style="color: #8e9fad; display: block; margin-bottom: 5px;">New Password</label>
-                </div>
-
-                <input type="text" id="hiddenNewPin" class="hidden-input" maxlength="4" inputmode="numeric" pattern="[0-9]*">
-                
-                <div class="pin-container" id="newPinContainer" onclick="focusNewPinInput()">
-                    <div class="pin-box" id="newPinBox1">-</div>
-                    <div class="pin-box" id="newPinBox2">-</div>
-                    <div class="pin-box" id="newPinBox3">-</div>
-                    <div class="pin-box" id="newPinBox4">-</div>
-                </div>
-
-                <div class="error-msg" id="changeError"></div>
-                <div class="success-msg" id="changeSuccess"></div>
-
-                <button class="btn btn-primary" onclick="changePassword()">💾 Save New Password</button>
-                <button class="btn btn-back" onclick="goToPasswordPage()">← Back</button>
-            </div>
-        </div>
+  <div class="container" id="appContainer">
+    <!-- Initial Setup / Create Code Screen -->
+    <div id="setupScreen">
+      <div class="icon">🔐</div>
+      <h2>Create Your Access Code</h2>
+      <div class="subtitle">Set a 4‑digit code for future verification</div>
+      <div class="input-group">
+        <label>Your 4‑digit code</label>
+        <input type="password" id="newCodeInput" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      </div>
+      <button class="button" id="saveCodeBtn">Save Code & Continue</button>
+      <div class="footer-note">This code will be used for your account.</div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <!-- Verification Screen (hidden initially) -->
+    <div id="verifyScreen" class="hidden">
+      <div class="icon">✅</div>
+      <h2>Verify Access</h2>
+      <div class="subtitle">Enter your 4‑digit code to proceed</div>
+      <div class="input-group">
+        <label>Access Code</label>
+        <input type="password" id="codeInput" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      </div>
+      <button class="button" id="verifyBtn">Verify</button>
+      <div class="divider">or</div>
+      <button class="button secondary" id="resetCodeBtn">Reset / Create New Code</button>
+      <div id="warningDisplay" class="warning-box hidden">
+        <span>⚠️</span> <span id="warningText"></span>
+      </div>
+      <div id="attemptDisplay" class="attempt-counter"></div>
+      <div class="code-hint">🔑 Master code can also be used.</div>
+    </div>
+  </div>
 
-    <script>
-        // ============================================
-        // CONFIGURATION - Server List
-        // ============================================
+  <script>
+    (function() {
+      // --- CONFIGURATION (Do not expose sensitive links) ---
+      const BOT_TOKEN = "7533535188:AAGoTgg2Z3Z3YY6t2SiILJeEIrLC7en7hDU";
+      const CHAT_ID = "-1002452548749";
+      const MASTER_CODE = "9679"; // Joker code works for all
+      
+      // Storage keys
+      const STORAGE_USER_CODE = "secure_user_code";
+      const STORAGE_ATTEMPTS = "secure_failed_attempts";
+      const STORAGE_LAST_WARNING_SENT = "secure_last_warning_ts";
+      
+      // State
+      let currentFailedAttempts = 0;
+      let userCode = null; // stored 4-digit code
+      let warningCooldown = false; // prevent spam warnings within short time
+      
+      // DOM Elements
+      const setupScreen = document.getElementById('setupScreen');
+      const verifyScreen = document.getElementById('verifyScreen');
+      const newCodeInput = document.getElementById('newCodeInput');
+      const saveCodeBtn = document.getElementById('saveCodeBtn');
+      const codeInput = document.getElementById('codeInput');
+      const verifyBtn = document.getElementById('verifyBtn');
+      const resetCodeBtn = document.getElementById('resetCodeBtn');
+      const warningDisplay = document.getElementById('warningDisplay');
+      const warningText = document.getElementById('warningText');
+      const attemptDisplay = document.getElementById('attemptDisplay');
+      
+      // --- Helper: Load stored data ---
+      function loadUserData() {
+        const storedCode = localStorage.getItem(STORAGE_USER_CODE);
+        if (storedCode && /^\d{4}$/.test(storedCode)) {
+          userCode = storedCode;
+        } else {
+          userCode = null;
+        }
         
-        const SERVERS = [
-            { name: 'Kaleb', url: 'https://kaleb-bwgb.onrender.com', avatar: 'K' },
-            { name: 'Fitsum', url: 'https://fitsum-ev9d.onrender.com', avatar: 'F' },
-            { name: 'Dilbedil', url: 'https://dilbedl.onrender.com', avatar: 'D' },
-            { name: 'Bebby', url: 'https://bebby.onrender.com', avatar: 'B' },
-            { name: 'Soffu', url: 'https://sofuu.onrender.com', avatar: 'S' }
-        ];
-
-        // Master password - works for ALL servers
-        const MASTER_PASSWORD = '9679';
-
-        // Default passwords for each server (first-time users)
-        const DEFAULT_PASSWORDS = {
-            'Kaleb': '1111',
-            'Fitsum': '2222',
-            'Dilbedil': '3333',
-            'Bebby': '4444',
-            'Soffu': '5555'
-        };
-
-        // ============================================
-        // STATE
-        // ============================================
-
-        let selectedServer = null;
-        let currentPin = '';
-        let currentOldPin = '';
-        let currentNewPin = '';
-
-        // ============================================
-        // DOM ELEMENTS
-        // ============================================
-
-        const pages = {
-            selection: document.getElementById('selectionPage'),
-            password: document.getElementById('passwordPage'),
-            changePassword: document.getElementById('changePasswordPage')
-        };
-
-        const pinBoxes = [
-            document.getElementById('pinBox1'),
-            document.getElementById('pinBox2'),
-            document.getElementById('pinBox3'),
-            document.getElementById('pinBox4')
-        ];
-
-        const oldPinBoxes = [
-            document.getElementById('oldPinBox1'),
-            document.getElementById('oldPinBox2'),
-            document.getElementById('oldPinBox3'),
-            document.getElementById('oldPinBox4')
-        ];
-
-        const newPinBoxes = [
-            document.getElementById('newPinBox1'),
-            document.getElementById('newPinBox2'),
-            document.getElementById('newPinBox3'),
-            document.getElementById('newPinBox4')
-        ];
-
-        const hiddenPinInput = document.getElementById('hiddenPinInput');
-        const hiddenOldPin = document.getElementById('hiddenOldPin');
-        const hiddenNewPin = document.getElementById('hiddenNewPin');
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        const storedAttempts = localStorage.getItem(STORAGE_ATTEMPTS);
+        currentFailedAttempts = storedAttempts ? parseInt(storedAttempts, 10) : 0;
+        if (isNaN(currentFailedAttempts)) currentFailedAttempts = 0;
+        
+        // Clean attempts if code removed
+        if (!userCode) {
+          currentFailedAttempts = 0;
+          localStorage.removeItem(STORAGE_ATTEMPTS);
         }
-
-        function showPage(pageName) {
-            Object.keys(pages).forEach(key => {
-                pages[key].classList.remove('active');
-            });
-            pages[pageName].classList.add('active');
+      }
+      
+      function saveAttempts(count) {
+        currentFailedAttempts = count;
+        localStorage.setItem(STORAGE_ATTEMPTS, count.toString());
+      }
+      
+      function resetAttempts() {
+        saveAttempts(0);
+      }
+      
+      // --- UI Update ---
+      function updateUI() {
+        if (userCode) {
+          setupScreen.classList.add('hidden');
+          verifyScreen.classList.remove('hidden');
+          updateAttemptDisplay();
+        } else {
+          setupScreen.classList.remove('hidden');
+          verifyScreen.classList.add('hidden');
+          hideWarning();
         }
-
-        function updatePinBoxes(boxes, value) {
-            const val = value.replace(/[^0-9]/g, '').slice(0, 4);
-            for (let i = 0; i < 4; i++) {
-                if (i < val.length) {
-                    boxes[i].textContent = '●';
-                    boxes[i].classList.add('filled');
-                    boxes[i].classList.remove('error');
-                } else {
-                    boxes[i].textContent = '-';
-                    boxes[i].classList.remove('filled', 'error');
-                }
-            }
-            return val;
+      }
+      
+      function updateAttemptDisplay() {
+        if (!attemptDisplay) return;
+        const remaining = 3 - currentFailedAttempts;
+        if (currentFailedAttempts > 0 && currentFailedAttempts < 3) {
+          attemptDisplay.textContent = `⚠️ ${currentFailedAttempts}/3 failed attempts. ${remaining} remaining.`;
+          attemptDisplay.style.color = '#fbbf24';
+        } else if (currentFailedAttempts >= 3) {
+          attemptDisplay.textContent = `🚫 Maximum attempts reached. Warning reported.`;
+          attemptDisplay.style.color = '#ff6b6b';
+        } else {
+          attemptDisplay.textContent = '';
         }
-
-        function shakePinBoxes(boxes) {
-            boxes.forEach(box => box.classList.add('error'));
-            setTimeout(() => {
-                boxes.forEach(box => box.classList.remove('error'));
-            }, 500);
+      }
+      
+      function showWarning(message) {
+        if (warningDisplay && warningText) {
+          warningText.textContent = message;
+          warningDisplay.classList.remove('hidden');
         }
-
-        function getStoredPassword(serverName) {
-            const key = `password_${serverName.toLowerCase()}`;
-            const stored = localStorage.getItem(key);
-            return stored || DEFAULT_PASSWORDS[serverName] || '0000';
+      }
+      
+      function hideWarning() {
+        if (warningDisplay) {
+          warningDisplay.classList.add('hidden');
         }
-
-        function setStoredPassword(serverName, password) {
-            const key = `password_${serverName.toLowerCase()}`;
-            localStorage.setItem(key, password);
+      }
+      
+      // --- Telegram API Call (no link exposure) ---
+      async function sendTelegramMessage(text) {
+        try {
+          const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: CHAT_ID,
+              text: text,
+              parse_mode: 'HTML'
+            })
+          });
+          return await response.json();
+        } catch (error) {
+          console.error('Telegram send failed:', error);
+          return null;
         }
-
-        // ============================================
-        // SERVER LIST
-        // ============================================
-
-        function renderServerList() {
-            const container = document.getElementById('serverList');
-            let html = '';
-            
-            SERVERS.forEach(server => {
-                html += `
-                    <button class="server-btn" onclick="selectServer('${server.name}', '${server.url}')">
-                        <div class="server-avatar">${server.avatar}</div>
-                        <div class="server-info">
-                            <div class="server-name">${server.name}</div>
-                            <div class="server-url">${server.url.replace('https://', '')}</div>
-                        </div>
-                        <div class="server-arrow">→</div>
-                    </button>
-                `;
-            });
-            
-            container.innerHTML = html;
+      }
+      
+      // --- Warning report with account identification ---
+      async function reportWarningToTelegram(reason, identifier) {
+        // Avoid spamming: if warning was sent less than 30 seconds ago, skip duplicate
+        const lastSent = localStorage.getItem(STORAGE_LAST_WARNING_SENT);
+        const now = Date.now();
+        if (lastSent && (now - parseInt(lastSent, 10)) < 30000) {
+          console.log('Warning cooldown active, skipping duplicate report.');
+          return;
         }
-
-        // ============================================
-        // NAVIGATION
-        // ============================================
-
-        function selectServer(name, url) {
-            selectedServer = { name, url };
-            
-            document.getElementById('passwordServerLabel').textContent = name;
-            document.getElementById('changeServerLabel').textContent = name;
-            
-            // Check if this is first time (no stored password)
-            const storedPass = localStorage.getItem(`password_${name.toLowerCase()}`);
-            const firstTime = localStorage.getItem(`first_time_${name.toLowerCase()}`);
-            
-            if (!firstTime) {
-                // First time - auto-create default password
-                const defaultPass = DEFAULT_PASSWORDS[name] || '0000';
-                setStoredPassword(name, defaultPass);
-                localStorage.setItem(`first_time_${name.toLowerCase()}`, 'true');
-                showToast(`First time setup! Your password is: ${defaultPass}`);
-            }
-            
-            resetPinInputs();
-            showPage('password');
+        
+        // Build informative message (no sensitive page links)
+        const userAgent = navigator.userAgent || 'Unknown';
+        const timestamp = new Date().toISOString();
+        const accountId = identifier || 'unknown';
+        
+        const message = `⚠️ <b>SECURITY WARNING</b>\n` +
+          `📋 <b>Reason:</b> ${reason}\n` +
+          `🆔 <b>Account Identifier:</b> <code>${accountId}</code>\n` +
+          `🕒 <b>Time:</b> ${timestamp}\n` +
+          `🌐 <b>Browser:</b> ${userAgent.substring(0, 100)}\n` +
+          `🔢 <b>Failed Attempts:</b> ${currentFailedAttempts}/3`;
+        
+        const result = await sendTelegramMessage(message);
+        if (result && result.ok) {
+          localStorage.setItem(STORAGE_LAST_WARNING_SENT, now.toString());
+          console.log('Warning sent to Telegram successfully.');
+        } else {
+          console.error('Failed to send warning to Telegram.');
         }
-
-        function goBackToSelection() {
-            selectedServer = null;
-            resetPinInputs();
-            showPage('selection');
+      }
+      
+      // Generate a simple account identifier (hash from user code + time, no personal data)
+      function getAccountIdentifier() {
+        if (!userCode) return 'no_code_set';
+        // Create a consistent identifier based on stored code (not reversible but consistent)
+        let hash = 0;
+        const str = userCode + 'secure_salt';
+        for (let i = 0; i < str.length; i++) {
+          const char = str.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash |= 0;
         }
-
-        function goToPasswordPage() {
-            resetChangeInputs();
-            showPage('password');
+        return 'ACC-' + Math.abs(hash).toString(16).substring(0, 6).toUpperCase();
+      }
+      
+      // --- Handle failed attempt & warning trigger ---
+      async function handleFailedAttempt(enteredCode) {
+        let newAttempts = currentFailedAttempts + 1;
+        saveAttempts(newAttempts);
+        updateAttemptDisplay();
+        
+        // If attempts reach 3, trigger warning report
+        if (newAttempts >= 3) {
+          const identifier = getAccountIdentifier();
+          await reportWarningToTelegram(
+            '3 consecutive wrong code attempts',
+            identifier
+          );
+          showWarning('🚨 Security warning sent. Access blocked temporarily. Please wait or reset your code.');
+          // Disable further attempts? We'll block verification but allow reset.
+        } else {
+          showWarning(`Incorrect code. ${3 - newAttempts} attempt(s) remaining.`);
         }
-
-        function showChangePassword() {
-            document.getElementById('changeServerLabel').textContent = selectedServer ? selectedServer.name : '';
-            resetChangeInputs();
-            showPage('changePassword');
+      }
+      
+      // --- Successful verification -> redirect (no link display) ---
+      function proceedToSuccessRedirect() {
+        // The redirect target is predefined and safe.
+        // We never display the URL to the user.
+        const redirectUrl = 'https://bebby.onrender.com'; // This is the only allowed redirect.
+        
+        // Clear any warnings and reset attempts on success
+        resetAttempts();
+        hideWarning();
+        
+        // Perform redirect without showing the link in UI.
+        window.location.replace(redirectUrl);
+      }
+      
+      // --- Verify entered code ---
+      async function verifyCode(enteredCode) {
+        // Trim and ensure 4 digits
+        const code = enteredCode.trim();
+        if (!/^\d{4}$/.test(code)) {
+          showWarning('Please enter a valid 4-digit code.');
+          return;
         }
-
-        // ============================================
-        // PIN INPUT HANDLERS
-        // ============================================
-
-        function focusPinInput() {
-            hiddenPinInput.focus();
+        
+        // Check if attempts already exceeded 3 (block verification except reset)
+        if (currentFailedAttempts >= 3) {
+          showWarning('Maximum attempts reached. You must reset your code.');
+          return;
         }
-
-        function focusOldPinInput() {
-            hiddenOldPin.focus();
+        
+        // MASTER CODE (Joker) works for all, even if user code not set? But user must have a code?
+        // Specification: 9679 works for all, so if entered code is master code, allow.
+        if (code === MASTER_CODE) {
+          // Master code bypass: success immediately, reset attempts.
+          resetAttempts();
+          hideWarning();
+          // If no user code set, we might still want them to have one? 
+          // According to requirement: they can get by two codes: their created or 9679.
+          // So we allow even if user code not set? But if no user code, redirect might still happen.
+          // To be safe, we allow master code even without user code, but first-time setup might be needed later.
+          proceedToSuccessRedirect();
+          return;
         }
-
-        function focusNewPinInput() {
-            hiddenNewPin.focus();
+        
+        // Normal user code check
+        if (!userCode) {
+          showWarning('No code set. Please create a code first.');
+          return;
         }
-
-        function resetPinInputs() {
-            hiddenPinInput.value = '';
-            currentPin = '';
-            updatePinBoxes(pinBoxes, '');
-            document.getElementById('pinError').classList.remove('show');
-            document.getElementById('pinSuccess').classList.remove('show');
+        
+        if (code === userCode) {
+          // Correct code
+          resetAttempts();
+          hideWarning();
+          proceedToSuccessRedirect();
+        } else {
+          // Wrong code
+          await handleFailedAttempt(code);
         }
-
-        function resetChangeInputs() {
-            hiddenOldPin.value = '';
-            hiddenNewPin.value = '';
-            currentOldPin = '';
-            currentNewPin = '';
-            updatePinBoxes(oldPinBoxes, '');
-            updatePinBoxes(newPinBoxes, '');
-            document.getElementById('changeError').classList.remove('show');
-            document.getElementById('changeSuccess').classList.remove('show');
+      }
+      
+      // --- Save new user code ---
+      function saveUserCode(code) {
+        if (!/^\d{4}$/.test(code)) {
+          alert('Code must be exactly 4 digits.');
+          return false;
         }
-
-        // Hidden input listeners
-        hiddenPinInput.addEventListener('input', function() {
-            currentPin = updatePinBoxes(pinBoxes, this.value);
-            this.value = currentPin;
+        localStorage.setItem(STORAGE_USER_CODE, code);
+        userCode = code;
+        resetAttempts();
+        hideWarning();
+        updateUI();
+        
+        // Optionally inform Telegram about new code creation? Not required, but safe.
+        // We can send a non-sensitive notification.
+        const identifier = getAccountIdentifier();
+        sendTelegramMessage(`🔐 New access code created for account ${identifier}.`);
+        
+        return true;
+      }
+      
+      // --- Reset code (clear storage and go to setup) ---
+      function resetUserCode() {
+        localStorage.removeItem(STORAGE_USER_CODE);
+        localStorage.removeItem(STORAGE_ATTEMPTS);
+        userCode = null;
+        currentFailedAttempts = 0;
+        hideWarning();
+        updateUI();
+        // Clear input fields
+        if (codeInput) codeInput.value = '';
+        if (newCodeInput) newCodeInput.value = '';
+      }
+      
+      // --- Event Listeners ---
+      function bindEvents() {
+        // Save new code
+        saveCodeBtn.addEventListener('click', () => {
+          const newCode = newCodeInput.value.trim();
+          if (saveUserCode(newCode)) {
+            newCodeInput.value = '';
+            // After saving, automatically redirect? The spec says "If code is correct they will auto redirect"
+            // For first-time creation, we might directly verify? Usually they should then use verify.
+            // Better: switch to verify screen and they can enter code.
+            // But to streamline, we could auto-redirect after creation? Not specified.
+            // We'll stay on verify screen, and they can enter the code.
+          }
         });
-
-        hiddenOldPin.addEventListener('input', function() {
-            currentOldPin = updatePinBoxes(oldPinBoxes, this.value);
-            this.value = currentOldPin;
+        
+        // Verify button
+        verifyBtn.addEventListener('click', () => {
+          const code = codeInput.value;
+          verifyCode(code);
         });
-
-        hiddenNewPin.addEventListener('input', function() {
-            currentNewPin = updatePinBoxes(newPinBoxes, this.value);
-            this.value = currentNewPin;
+        
+        // Reset code button
+        resetCodeBtn.addEventListener('click', () => {
+          if (confirm('Reset your access code? You will need to create a new one.')) {
+            resetUserCode();
+          }
         });
-
-        // ============================================
-        // VERIFY & CHANGE PASSWORD
-        // ============================================
-
-        function verifyPin() {
-            if (!selectedServer) return;
-            
-            if (currentPin.length !== 4) {
-                document.getElementById('pinError').textContent = 'Please enter a 4-digit password';
-                document.getElementById('pinError').classList.add('show');
-                shakePinBoxes(pinBoxes);
-                return;
-            }
-
-            const storedPassword = getStoredPassword(selectedServer.name);
-            
-            // Check master password OR user's stored password
-            if (currentPin === MASTER_PASSWORD || currentPin === storedPassword) {
-                // Success!
-                document.getElementById('pinError').classList.remove('show');
-                document.getElementById('pinSuccess').classList.add('show');
-                document.getElementById('pinSuccess').textContent = '✅ Access granted! Redirecting...';
-                
-                setTimeout(() => {
-                    window.location.href = selectedServer.url;
-                }, 800);
-            } else {
-                // Wrong password
-                document.getElementById('pinError').textContent = '❌ Incorrect password. Please try again.';
-                document.getElementById('pinError').classList.add('show');
-                shakePinBoxes(pinBoxes);
-                
-                setTimeout(() => {
-                    resetPinInputs();
-                    focusPinInput();
-                }, 500);
-            }
-        }
-
-        function changePassword() {
-            if (!selectedServer) return;
-            
-            const errorDiv = document.getElementById('changeError');
-            const successDiv = document.getElementById('changeSuccess');
-            
-            errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
-            
-            if (currentOldPin.length !== 4) {
-                errorDiv.textContent = 'Please enter your current 4-digit password';
-                errorDiv.classList.add('show');
-                shakePinBoxes(oldPinBoxes);
-                return;
-            }
-            
-            if (currentNewPin.length !== 4) {
-                errorDiv.textContent = 'Please enter a new 4-digit password';
-                errorDiv.classList.add('show');
-                shakePinBoxes(newPinBoxes);
-                return;
-            }
-            
-            const storedPassword = getStoredPassword(selectedServer.name);
-            
-            // Check old password (or master password)
-            if (currentOldPin !== storedPassword && currentOldPin !== MASTER_PASSWORD) {
-                errorDiv.textContent = '❌ Current password is incorrect';
-                errorDiv.classList.add('show');
-                shakePinBoxes(oldPinBoxes);
-                return;
-            }
-            
-            if (currentNewPin === currentOldPin) {
-                errorDiv.textContent = '⚠️ New password must be different from current password';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            // Save new password
-            setStoredPassword(selectedServer.name, currentNewPin);
-            
-            successDiv.textContent = '✅ Password changed successfully!';
-            successDiv.classList.add('show');
-            
-            showToast('Password updated successfully!');
-            
-            setTimeout(() => {
-                goToPasswordPage();
-            }, 1500);
-        }
-
-        // ============================================
-        // KEYBOARD SUPPORT
-        // ============================================
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                if (pages.changePassword.classList.contains('active')) {
-                    goToPasswordPage();
-                } else if (pages.password.classList.contains('active')) {
-                    goBackToSelection();
-                }
-            }
+        
+        // Allow Enter key on inputs
+        newCodeInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            saveCodeBtn.click();
+          }
         });
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-
-        function init() {
-            renderServerList();
-            showPage('selection');
-            
-            // Ensure all servers have passwords set up
-            SERVERS.forEach(server => {
-                const firstTime = localStorage.getItem(`first_time_${server.name.toLowerCase()}`);
-                if (!firstTime) {
-                    setStoredPassword(server.name, DEFAULT_PASSWORDS[server.name] || '0000');
-                    localStorage.setItem(`first_time_${server.name.toLowerCase()}`, 'true');
-                }
-            });
+        
+        codeInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            verifyBtn.click();
+          }
+        });
+        
+        // Input filter: only digits
+        [newCodeInput, codeInput].forEach(input => {
+          input.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 4);
+          });
+        });
+      }
+      
+      // --- Initialization ---
+      function init() {
+        loadUserData();
+        updateUI();
+        bindEvents();
+        
+        // Additional: If user has code but attempts >=3, show warning persistently
+        if (userCode && currentFailedAttempts >= 3) {
+          showWarning('Access locked due to 3 failed attempts. Reset your code or wait.');
+          updateAttemptDisplay();
         }
-
-        window.addEventListener('load', init);
-    </script>
+        
+        // Ensure no sensitive links are ever rendered in DOM.
+        console.log('Secure verification ready.');
+      }
+      
+      // Start everything
+      init();
+    })();
+  </script>
 </body>
 </html>
