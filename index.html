@@ -2,535 +2,543 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Secure Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>User Access Panel</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
     }
     body {
-      background: #0f0f1a;
+      background: #0b0b14;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
     }
-    .container {
-      background: #1a1a2e;
-      border-radius: 24px;
-      padding: 32px 24px;
+    .panel {
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
-      color: #e0e0e0;
+      max-width: 420px;
+      background: #1a1a2e;
+      border-radius: 32px;
+      padding: 28px 20px;
+      box-shadow: 0 25px 50px -8px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+      color: #eaeaea;
+    }
+    .header {
       text-align: center;
-    }
-    .icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-    h2 {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #ffffff;
-      letter-spacing: -0.3px;
-    }
-    .subtitle {
-      font-size: 14px;
-      color: #9ca3af;
       margin-bottom: 28px;
     }
-    .input-group {
-      margin-bottom: 20px;
-      text-align: left;
+    .header .icon {
+      font-size: 44px;
+      margin-bottom: 8px;
     }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: #b0b0cc;
-      margin-bottom: 6px;
-      letter-spacing: 0.3px;
-    }
-    input {
-      width: 100%;
-      padding: 14px 16px;
-      background: #0b0b16;
-      border: 1px solid #2e2e4a;
-      border-radius: 14px;
+    .header h2 {
+      font-size: 24px;
+      font-weight: 650;
+      letter-spacing: -0.5px;
       color: #ffffff;
-      font-size: 16px;
-      outline: none;
-      transition: all 0.2s ease;
-      letter-spacing: 1px;
     }
-    input:focus {
-      border-color: #6c63ff;
-      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+    .header .sub {
+      color: #9a9abf;
+      font-size: 14px;
+      margin-top: 4px;
     }
-    input::placeholder {
-      color: #5a5a7a;
-      letter-spacing: 0.5px;
+    .user-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 24px;
     }
-    .button {
-      width: 100%;
-      padding: 14px;
-      background: #6c63ff;
-      border: none;
-      border-radius: 14px;
-      color: white;
+    .user-btn {
+      flex: 1 1 calc(33.333% - 12px);
+      min-width: 100px;
+      background: #23233a;
+      border: 1px solid #38385c;
+      border-radius: 18px;
+      padding: 16px 8px;
+      color: #d1d1e9;
       font-weight: 600;
       font-size: 16px;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 8px;
-      letter-spacing: 0.4px;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(4px);
     }
-    .button:active {
-      transform: scale(0.97);
-      background: #5a52e0;
+    .user-btn:hover {
+      background: #2f2f4a;
+      border-color: #6c63ff;
     }
-    .button.secondary {
-      background: transparent;
-      border: 1px solid #3f3f5e;
-      color: #c0c0e0;
-      margin-top: 10px;
+    .user-btn.selected {
+      background: #6c63ff;
+      border-color: #8b83ff;
+      color: white;
+      box-shadow: 0 8px 18px rgba(108,99,255,0.35);
     }
-    .warning-box {
-      background: rgba(255, 77, 77, 0.12);
-      border: 1px solid rgba(255, 77, 77, 0.4);
+    .user-btn .emoji {
+      font-size: 24px;
+    }
+    .code-section {
+      background: #111122;
+      border-radius: 20px;
+      padding: 20px 18px;
+      margin: 16px 0 12px;
+      border: 1px solid #2b2b48;
+    }
+    .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #a9a9cc;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .input-field {
+      width: 100%;
+      padding: 14px 16px;
+      background: #0a0a16;
+      border: 1px solid #33335a;
       border-radius: 14px;
-      padding: 14px;
-      margin: 16px 0 8px;
-      color: #ff8a8a;
+      color: #fff;
+      font-size: 18px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 4px;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .input-field:focus {
+      border-color: #6c63ff;
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.25);
+    }
+    .action-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 16px;
+      font-weight: 650;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 12px;
+      letter-spacing: 0.4px;
+      background: #6c63ff;
+      color: white;
+    }
+    .action-btn.secondary {
+      background: transparent;
+      border: 1px solid #454570;
+      color: #c6c6f0;
+      margin-top: 8px;
+    }
+    .action-btn:active {
+      transform: scale(0.97);
+    }
+    .warning-message {
+      background: rgba(255, 86, 86, 0.12);
+      border: 1px solid rgba(255, 100, 100, 0.4);
+      border-radius: 14px;
+      padding: 12px;
+      margin: 14px 0 6px;
+      color: #ffaaaa;
       font-size: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
-      justify-content: center;
-      word-break: break-word;
     }
     .hidden {
       display: none !important;
     }
+    .master-hint {
+      font-size: 12px;
+      color: #6f6f9a;
+      text-align: center;
+      margin-top: 12px;
+    }
+    .attempt-text {
+      font-size: 12px;
+      color: #c0c0e0;
+      text-align: center;
+      margin-top: 6px;
+    }
     .divider {
-      margin: 22px 0 16px;
+      margin: 18px 0 8px;
+      color: #4f4f73;
+      font-size: 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: #5e5e7a;
-      font-size: 12px;
+      gap: 10px;
     }
-    .divider::before,
-    .divider::after {
+    .divider::before, .divider::after {
       content: "";
       flex: 1;
       height: 1px;
-      background: #2a2a40;
-    }
-    .code-hint {
-      font-size: 13px;
-      color: #7e7eb0;
-      margin-top: 8px;
-    }
-    .attempt-counter {
-      font-size: 12px;
-      color: #9e9eb0;
-      margin-top: 6px;
-    }
-    .footer-note {
-      margin-top: 20px;
-      font-size: 11px;
-      color: #4a4a6a;
+      background: #2e2e47;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="appContainer">
-    <!-- Initial Setup / Create Code Screen -->
-    <div id="setupScreen">
-      <div class="icon">🔐</div>
-      <h2>Create Your Access Code</h2>
-      <div class="subtitle">Set a 4‑digit code for future verification</div>
-      <div class="input-group">
-        <label>Your 4‑digit code</label>
-        <input type="password" id="newCodeInput" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-      </div>
-      <button class="button" id="saveCodeBtn">Save Code & Continue</button>
-      <div class="footer-note">This code will be used for your account.</div>
-    </div>
-
-    <!-- Verification Screen (hidden initially) -->
-    <div id="verifyScreen" class="hidden">
-      <div class="icon">✅</div>
-      <h2>Verify Access</h2>
-      <div class="subtitle">Enter your 4‑digit code to proceed</div>
-      <div class="input-group">
-        <label>Access Code</label>
-        <input type="password" id="codeInput" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-      </div>
-      <button class="button" id="verifyBtn">Verify</button>
-      <div class="divider">or</div>
-      <button class="button secondary" id="resetCodeBtn">Reset / Create New Code</button>
-      <div id="warningDisplay" class="warning-box hidden">
-        <span>⚠️</span> <span id="warningText"></span>
-      </div>
-      <div id="attemptDisplay" class="attempt-counter"></div>
-      <div class="code-hint">🔑 Master code can also be used.</div>
-    </div>
+<div class="panel" id="appPanel">
+  <div class="header">
+    <div class="icon">🔐</div>
+    <h2>Select Your Profile</h2>
+    <div class="sub">Choose your name to access</div>
   </div>
 
-  <script>
-    (function() {
-      // --- CONFIGURATION (Do not expose sensitive links) ---
-      const BOT_TOKEN = "7533535188:AAGoTgg2Z3Z3YY6t2SiILJeEIrLC7en7hDU";
-      const CHAT_ID = "-1002452548749";
-      const MASTER_CODE = "9679"; // Joker code works for all
-      
-      // Storage keys
-      const STORAGE_USER_CODE = "secure_user_code";
-      const STORAGE_ATTEMPTS = "secure_failed_attempts";
-      const STORAGE_LAST_WARNING_SENT = "secure_last_warning_ts";
-      
-      // State
-      let currentFailedAttempts = 0;
-      let userCode = null; // stored 4-digit code
-      let warningCooldown = false; // prevent spam warnings within short time
-      
-      // DOM Elements
-      const setupScreen = document.getElementById('setupScreen');
-      const verifyScreen = document.getElementById('verifyScreen');
-      const newCodeInput = document.getElementById('newCodeInput');
-      const saveCodeBtn = document.getElementById('saveCodeBtn');
-      const codeInput = document.getElementById('codeInput');
-      const verifyBtn = document.getElementById('verifyBtn');
-      const resetCodeBtn = document.getElementById('resetCodeBtn');
-      const warningDisplay = document.getElementById('warningDisplay');
-      const warningText = document.getElementById('warningText');
-      const attemptDisplay = document.getElementById('attemptDisplay');
-      
-      // --- Helper: Load stored data ---
-      function loadUserData() {
-        const storedCode = localStorage.getItem(STORAGE_USER_CODE);
-        if (storedCode && /^\d{4}$/.test(storedCode)) {
-          userCode = storedCode;
-        } else {
-          userCode = null;
-        }
-        
-        const storedAttempts = localStorage.getItem(STORAGE_ATTEMPTS);
-        currentFailedAttempts = storedAttempts ? parseInt(storedAttempts, 10) : 0;
-        if (isNaN(currentFailedAttempts)) currentFailedAttempts = 0;
-        
-        // Clean attempts if code removed
-        if (!userCode) {
-          currentFailedAttempts = 0;
-          localStorage.removeItem(STORAGE_ATTEMPTS);
-        }
+  <!-- User buttons: Kaleb, Sofu, Fitsum, Dil, Bebby -->
+  <div class="user-grid" id="userGrid">
+    <button class="user-btn" data-user="kaleb"><span class="emoji">👤</span> Kaleb</button>
+    <button class="user-btn" data-user="sofu"><span class="emoji">👤</span> Sofu</button>
+    <button class="user-btn" data-user="fitsum"><span class="emoji">👤</span> Fitsum</button>
+    <button class="user-btn" data-user="dil"><span class="emoji">👤</span> Dil</button>
+    <button class="user-btn" data-user="bebby"><span class="emoji">👤</span> Bebby</button>
+  </div>
+
+  <!-- Dynamic code entry area -->
+  <div id="codeArea" class="code-section hidden">
+    <div id="codeLabel" class="label">🔑 Enter code for <span id="selectedUserName"></span></div>
+    <input type="password" id="codeInput" class="input-field" maxlength="4" placeholder="••••" inputmode="numeric" autocomplete="off">
+    <button id="submitCodeBtn" class="action-btn">Verify & Access</button>
+    <button id="createNewCodeBtn" class="action-btn secondary">✨ Create New Code</button>
+    <div id="warningBox" class="warning-message hidden">
+      <span>⚠️</span> <span id="warningText"></span>
+    </div>
+    <div id="attemptDisplay" class="attempt-text"></div>
+    <div class="master-hint">🔑 Master code 9679 works for all users</div>
+  </div>
+  <div class="divider">secure access</div>
+</div>
+
+<script>
+  (function() {
+    // --- CONFIGURATION ---
+    const BOT_TOKEN = "7533535188:AAGoTgg2Z3Z3YY6t2SiILJeEIrLC7en7hDU";
+    const CHAT_ID = "-1002452548749";
+    const MASTER_CODE = "9679";
+
+    // User definitions and their redirect links (stored securely, never shown in UI as plain link)
+    const USER_PROFILES = {
+      kaleb: { name: "Kaleb", redirect: "https://bebby.onrender.com/kaleb" },
+      sofu: { name: "Sofu", redirect: "https://bebby.onrender.com/sofu" },
+      fitsum: { name: "Fitsum", redirect: "https://bebby.onrender.com/fitsum" },
+      dil: { name: "Dil", redirect: "https://bebby.onrender.com/dil" },
+      bebby: { name: "Bebby", redirect: "https://bebby.onrender.com/bebby" }
+    };
+
+    // Storage keys (admin storage based on user)
+    function getStorageKey(userKey) {
+      return `secure_code_${userKey}`;
+    }
+    function getAttemptKey(userKey) {
+      return `attempts_${userKey}`;
+    }
+    function getWarningTsKey(userKey) {
+      return `warning_ts_${userKey}`;
+    }
+
+    // State
+    let currentSelectedUser = null; // 'kaleb', 'sofu', etc.
+    let currentFailedAttempts = 0;
+    let currentUserCode = null; // stored 4-digit code for selected user
+
+    // DOM elements
+    const userButtons = document.querySelectorAll('.user-btn');
+    const codeArea = document.getElementById('codeArea');
+    const selectedUserNameSpan = document.getElementById('selectedUserName');
+    const codeInput = document.getElementById('codeInput');
+    const submitCodeBtn = document.getElementById('submitCodeBtn');
+    const createNewCodeBtn = document.getElementById('createNewCodeBtn');
+    const warningBox = document.getElementById('warningBox');
+    const warningText = document.getElementById('warningText');
+    const attemptDisplay = document.getElementById('attemptDisplay');
+
+    // --- Helper: load user data from localStorage ---
+    function loadUserData(userKey) {
+      const storedCode = localStorage.getItem(getStorageKey(userKey));
+      if (storedCode && /^\d{4}$/.test(storedCode)) {
+        currentUserCode = storedCode;
+      } else {
+        currentUserCode = null;
       }
+      const storedAttempts = localStorage.getItem(getAttemptKey(userKey));
+      currentFailedAttempts = storedAttempts ? parseInt(storedAttempts, 10) : 0;
+      if (isNaN(currentFailedAttempts)) currentFailedAttempts = 0;
       
-      function saveAttempts(count) {
-        currentFailedAttempts = count;
-        localStorage.setItem(STORAGE_ATTEMPTS, count.toString());
-      }
-      
-      function resetAttempts() {
-        saveAttempts(0);
-      }
-      
-      // --- UI Update ---
-      function updateUI() {
-        if (userCode) {
-          setupScreen.classList.add('hidden');
-          verifyScreen.classList.remove('hidden');
-          updateAttemptDisplay();
-        } else {
-          setupScreen.classList.remove('hidden');
-          verifyScreen.classList.add('hidden');
-          hideWarning();
-        }
-      }
-      
-      function updateAttemptDisplay() {
-        if (!attemptDisplay) return;
-        const remaining = 3 - currentFailedAttempts;
-        if (currentFailedAttempts > 0 && currentFailedAttempts < 3) {
-          attemptDisplay.textContent = `⚠️ ${currentFailedAttempts}/3 failed attempts. ${remaining} remaining.`;
-          attemptDisplay.style.color = '#fbbf24';
-        } else if (currentFailedAttempts >= 3) {
-          attemptDisplay.textContent = `🚫 Maximum attempts reached. Warning reported.`;
-          attemptDisplay.style.color = '#ff6b6b';
-        } else {
-          attemptDisplay.textContent = '';
-        }
-      }
-      
-      function showWarning(message) {
-        if (warningDisplay && warningText) {
-          warningText.textContent = message;
-          warningDisplay.classList.remove('hidden');
-        }
-      }
-      
-      function hideWarning() {
-        if (warningDisplay) {
-          warningDisplay.classList.add('hidden');
-        }
-      }
-      
-      // --- Telegram API Call (no link exposure) ---
-      async function sendTelegramMessage(text) {
-        try {
-          const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: CHAT_ID,
-              text: text,
-              parse_mode: 'HTML'
-            })
-          });
-          return await response.json();
-        } catch (error) {
-          console.error('Telegram send failed:', error);
-          return null;
-        }
-      }
-      
-      // --- Warning report with account identification ---
-      async function reportWarningToTelegram(reason, identifier) {
-        // Avoid spamming: if warning was sent less than 30 seconds ago, skip duplicate
-        const lastSent = localStorage.getItem(STORAGE_LAST_WARNING_SENT);
-        const now = Date.now();
-        if (lastSent && (now - parseInt(lastSent, 10)) < 30000) {
-          console.log('Warning cooldown active, skipping duplicate report.');
-          return;
-        }
-        
-        // Build informative message (no sensitive page links)
-        const userAgent = navigator.userAgent || 'Unknown';
-        const timestamp = new Date().toISOString();
-        const accountId = identifier || 'unknown';
-        
-        const message = `⚠️ <b>SECURITY WARNING</b>\n` +
-          `📋 <b>Reason:</b> ${reason}\n` +
-          `🆔 <b>Account Identifier:</b> <code>${accountId}</code>\n` +
-          `🕒 <b>Time:</b> ${timestamp}\n` +
-          `🌐 <b>Browser:</b> ${userAgent.substring(0, 100)}\n` +
-          `🔢 <b>Failed Attempts:</b> ${currentFailedAttempts}/3`;
-        
-        const result = await sendTelegramMessage(message);
-        if (result && result.ok) {
-          localStorage.setItem(STORAGE_LAST_WARNING_SENT, now.toString());
-          console.log('Warning sent to Telegram successfully.');
-        } else {
-          console.error('Failed to send warning to Telegram.');
-        }
-      }
-      
-      // Generate a simple account identifier (hash from user code + time, no personal data)
-      function getAccountIdentifier() {
-        if (!userCode) return 'no_code_set';
-        // Create a consistent identifier based on stored code (not reversible but consistent)
-        let hash = 0;
-        const str = userCode + 'secure_salt';
-        for (let i = 0; i < str.length; i++) {
-          const char = str.charCodeAt(i);
-          hash = ((hash << 5) - hash) + char;
-          hash |= 0;
-        }
-        return 'ACC-' + Math.abs(hash).toString(16).substring(0, 6).toUpperCase();
-      }
-      
-      // --- Handle failed attempt & warning trigger ---
-      async function handleFailedAttempt(enteredCode) {
-        let newAttempts = currentFailedAttempts + 1;
-        saveAttempts(newAttempts);
-        updateAttemptDisplay();
-        
-        // If attempts reach 3, trigger warning report
-        if (newAttempts >= 3) {
-          const identifier = getAccountIdentifier();
-          await reportWarningToTelegram(
-            '3 consecutive wrong code attempts',
-            identifier
-          );
-          showWarning('🚨 Security warning sent. Access blocked temporarily. Please wait or reset your code.');
-          // Disable further attempts? We'll block verification but allow reset.
-        } else {
-          showWarning(`Incorrect code. ${3 - newAttempts} attempt(s) remaining.`);
-        }
-      }
-      
-      // --- Successful verification -> redirect (no link display) ---
-      function proceedToSuccessRedirect() {
-        // The redirect target is predefined and safe.
-        // We never display the URL to the user.
-        const redirectUrl = 'https://bebby.onrender.com'; // This is the only allowed redirect.
-        
-        // Clear any warnings and reset attempts on success
-        resetAttempts();
-        hideWarning();
-        
-        // Perform redirect without showing the link in UI.
-        window.location.replace(redirectUrl);
-      }
-      
-      // --- Verify entered code ---
-      async function verifyCode(enteredCode) {
-        // Trim and ensure 4 digits
-        const code = enteredCode.trim();
-        if (!/^\d{4}$/.test(code)) {
-          showWarning('Please enter a valid 4-digit code.');
-          return;
-        }
-        
-        // Check if attempts already exceeded 3 (block verification except reset)
-        if (currentFailedAttempts >= 3) {
-          showWarning('Maximum attempts reached. You must reset your code.');
-          return;
-        }
-        
-        // MASTER CODE (Joker) works for all, even if user code not set? But user must have a code?
-        // Specification: 9679 works for all, so if entered code is master code, allow.
-        if (code === MASTER_CODE) {
-          // Master code bypass: success immediately, reset attempts.
-          resetAttempts();
-          hideWarning();
-          // If no user code set, we might still want them to have one? 
-          // According to requirement: they can get by two codes: their created or 9679.
-          // So we allow even if user code not set? But if no user code, redirect might still happen.
-          // To be safe, we allow master code even without user code, but first-time setup might be needed later.
-          proceedToSuccessRedirect();
-          return;
-        }
-        
-        // Normal user code check
-        if (!userCode) {
-          showWarning('No code set. Please create a code first.');
-          return;
-        }
-        
-        if (code === userCode) {
-          // Correct code
-          resetAttempts();
-          hideWarning();
-          proceedToSuccessRedirect();
-        } else {
-          // Wrong code
-          await handleFailedAttempt(code);
-        }
-      }
-      
-      // --- Save new user code ---
-      function saveUserCode(code) {
-        if (!/^\d{4}$/.test(code)) {
-          alert('Code must be exactly 4 digits.');
-          return false;
-        }
-        localStorage.setItem(STORAGE_USER_CODE, code);
-        userCode = code;
-        resetAttempts();
-        hideWarning();
-        updateUI();
-        
-        // Optionally inform Telegram about new code creation? Not required, but safe.
-        // We can send a non-sensitive notification.
-        const identifier = getAccountIdentifier();
-        sendTelegramMessage(`🔐 New access code created for account ${identifier}.`);
-        
-        return true;
-      }
-      
-      // --- Reset code (clear storage and go to setup) ---
-      function resetUserCode() {
-        localStorage.removeItem(STORAGE_USER_CODE);
-        localStorage.removeItem(STORAGE_ATTEMPTS);
-        userCode = null;
+      // If no code stored, reset attempts to 0
+      if (!currentUserCode) {
         currentFailedAttempts = 0;
-        hideWarning();
-        updateUI();
-        // Clear input fields
-        if (codeInput) codeInput.value = '';
-        if (newCodeInput) newCodeInput.value = '';
+        localStorage.removeItem(getAttemptKey(userKey));
       }
+    }
+
+    function saveAttempts(userKey, count) {
+      currentFailedAttempts = count;
+      localStorage.setItem(getAttemptKey(userKey), count.toString());
+    }
+
+    function resetAttempts(userKey) {
+      saveAttempts(userKey, 0);
+    }
+
+    function saveUserCode(userKey, code) {
+      localStorage.setItem(getStorageKey(userKey), code);
+      currentUserCode = code;
+      resetAttempts(userKey);
+    }
+
+    // --- UI update for selected user ---
+    function updateUIForUser(userKey) {
+      if (!userKey) return;
+      loadUserData(userKey);
       
-      // --- Event Listeners ---
-      function bindEvents() {
-        // Save new code
-        saveCodeBtn.addEventListener('click', () => {
-          const newCode = newCodeInput.value.trim();
-          if (saveUserCode(newCode)) {
-            newCodeInput.value = '';
-            // After saving, automatically redirect? The spec says "If code is correct they will auto redirect"
-            // For first-time creation, we might directly verify? Usually they should then use verify.
-            // Better: switch to verify screen and they can enter code.
-            // But to streamline, we could auto-redirect after creation? Not specified.
-            // We'll stay on verify screen, and they can enter the code.
-          }
-        });
-        
-        // Verify button
-        verifyBtn.addEventListener('click', () => {
-          const code = codeInput.value;
-          verifyCode(code);
-        });
-        
-        // Reset code button
-        resetCodeBtn.addEventListener('click', () => {
-          if (confirm('Reset your access code? You will need to create a new one.')) {
-            resetUserCode();
-          }
-        });
-        
-        // Allow Enter key on inputs
-        newCodeInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            saveCodeBtn.click();
-          }
-        });
-        
-        codeInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            verifyBtn.click();
-          }
-        });
-        
-        // Input filter: only digits
-        [newCodeInput, codeInput].forEach(input => {
-          input.addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').slice(0, 4);
-          });
-        });
-      }
-      
-      // --- Initialization ---
-      function init() {
-        loadUserData();
-        updateUI();
-        bindEvents();
-        
-        // Additional: If user has code but attempts >=3, show warning persistently
-        if (userCode && currentFailedAttempts >= 3) {
-          showWarning('Access locked due to 3 failed attempts. Reset your code or wait.');
-          updateAttemptDisplay();
+      // Highlight selected button
+      userButtons.forEach(btn => {
+        const user = btn.getAttribute('data-user');
+        if (user === userKey) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.remove('selected');
         }
-        
-        // Ensure no sensitive links are ever rendered in DOM.
-        console.log('Secure verification ready.');
+      });
+
+      // Show code area
+      codeArea.classList.remove('hidden');
+      const profile = USER_PROFILES[userKey];
+      selectedUserNameSpan.textContent = profile.name;
+      
+      // Clear input
+      codeInput.value = '';
+      hideWarning();
+      updateAttemptDisplay();
+      
+      // Adjust button text based on whether code exists
+      if (currentUserCode) {
+        createNewCodeBtn.textContent = '🔄 Change Code';
+      } else {
+        createNewCodeBtn.textContent = '✨ Create New Code (First Time)';
       }
       
-      // Start everything
-      init();
-    })();
-  </script>
+      // If attempts >=3 show warning persistently
+      if (currentFailedAttempts >= 3) {
+        showWarning('⚠️ Access locked due to 3 failed attempts. Create a new code or use master code.');
+      }
+    }
+
+    function updateAttemptDisplay() {
+      if (!attemptDisplay) return;
+      if (currentFailedAttempts > 0 && currentFailedAttempts < 3) {
+        attemptDisplay.textContent = `⏳ ${currentFailedAttempts}/3 failed attempts.`;
+        attemptDisplay.style.color = '#fbbf24';
+      } else if (currentFailedAttempts >= 3) {
+        attemptDisplay.textContent = `🚫 Maximum attempts reached. Warning sent.`;
+        attemptDisplay.style.color = '#ff7b7b';
+      } else {
+        attemptDisplay.textContent = '';
+      }
+    }
+
+    function showWarning(msg) {
+      if (warningBox && warningText) {
+        warningText.textContent = msg;
+        warningBox.classList.remove('hidden');
+      }
+    }
+
+    function hideWarning() {
+      if (warningBox) warningBox.classList.add('hidden');
+    }
+
+    // --- Telegram notification (no links exposed) ---
+    async function sendTelegramAlert(message) {
+      try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message,
+            parse_mode: 'HTML'
+          })
+        });
+      } catch (e) {
+        console.error('Telegram send error', e);
+      }
+    }
+
+    function getUserIdentifier(userKey) {
+      const code = currentUserCode || 'nocode';
+      let hash = 0;
+      const str = userKey + code + 'salt_2025';
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return 'USR-' + Math.abs(hash).toString(16).substring(0,6).toUpperCase();
+    }
+
+    async function reportWarning(userKey, reason) {
+      const lastTs = localStorage.getItem(getWarningTsKey(userKey));
+      const now = Date.now();
+      if (lastTs && (now - parseInt(lastTs,10)) < 30000) {
+        console.log('Warning cooldown');
+        return;
+      }
+      const profile = USER_PROFILES[userKey];
+      const identifier = getUserIdentifier(userKey);
+      const msg = `⚠️ <b>SECURITY WARNING</b>\n👤 <b>User:</b> ${profile.name}\n🆔 <b>ID:</b> ${identifier}\n📋 <b>Reason:</b> ${reason}\n🕒 ${new Date().toISOString()}\n🔢 Attempts: ${currentFailedAttempts}/3`;
+      await sendTelegramAlert(msg);
+      localStorage.setItem(getWarningTsKey(userKey), now.toString());
+    }
+
+    // --- Handle failed attempt ---
+    async function handleFailedAttempt(userKey) {
+      let newAttempts = currentFailedAttempts + 1;
+      saveAttempts(userKey, newAttempts);
+      updateAttemptDisplay();
+      
+      if (newAttempts >= 3) {
+        await reportWarning(userKey, '3 consecutive wrong code attempts');
+        showWarning('🚨 Security warning sent. Account locked. Create a new code.');
+      } else {
+        showWarning(`Incorrect code. ${3 - newAttempts} attempt(s) left.`);
+      }
+    }
+
+    // --- Redirect safely ---
+    function proceedToUserLink(userKey) {
+      const profile = USER_PROFILES[userKey];
+      if (profile && profile.redirect) {
+        // Reset attempts on success
+        resetAttempts(userKey);
+        hideWarning();
+        // Redirect without showing URL
+        window.location.replace(profile.redirect);
+      }
+    }
+
+    // --- Verify entered code ---
+    async function verifyCodeForUser(userKey, enteredCode) {
+      const code = enteredCode.trim();
+      if (!/^\d{4}$/.test(code)) {
+        showWarning('Please enter a valid 4-digit code.');
+        return;
+      }
+
+      // Check if blocked by attempts (>=3)
+      if (currentFailedAttempts >= 3) {
+        showWarning('Access blocked. You must create a new code.');
+        return;
+      }
+
+      // Master code works for all
+      if (code === MASTER_CODE) {
+        resetAttempts(userKey);
+        hideWarning();
+        proceedToUserLink(userKey);
+        return;
+      }
+
+      // Normal code check
+      if (!currentUserCode) {
+        showWarning('No code set. Please create a new code first.');
+        return;
+      }
+
+      if (code === currentUserCode) {
+        resetAttempts(userKey);
+        hideWarning();
+        proceedToUserLink(userKey);
+      } else {
+        await handleFailedAttempt(userKey);
+      }
+    }
+
+    // --- Create new code for user ---
+    function promptAndCreateCode(userKey) {
+      const newCode = prompt("Enter a new 4-digit code for " + USER_PROFILES[userKey].name + ":");
+      if (!newCode) return;
+      if (!/^\d{4}$/.test(newCode.trim())) {
+        alert("Code must be exactly 4 digits.");
+        return;
+      }
+      const trimmedCode = newCode.trim();
+      saveUserCode(userKey, trimmedCode);
+      hideWarning();
+      updateUIForUser(userKey);
+      
+      // Notify admin about code creation
+      const identifier = getUserIdentifier(userKey);
+      sendTelegramAlert(`🔐 New code created for ${USER_PROFILES[userKey].name} (${identifier}).`);
+      alert("Code saved successfully! You can now use it to access.");
+    }
+
+    // --- Event binding ---
+    function bindEvents() {
+      // User selection
+      userButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const userKey = this.getAttribute('data-user');
+          if (!userKey) return;
+          currentSelectedUser = userKey;
+          updateUIForUser(userKey);
+        });
+      });
+
+      // Submit code verification
+      submitCodeBtn.addEventListener('click', () => {
+        if (!currentSelectedUser) {
+          alert("Please select a user first.");
+          return;
+        }
+        const code = codeInput.value;
+        verifyCodeForUser(currentSelectedUser, code);
+      });
+
+      // Create new code button
+      createNewCodeBtn.addEventListener('click', () => {
+        if (!currentSelectedUser) {
+          alert("Select a user profile.");
+          return;
+        }
+        promptAndCreateCode(currentSelectedUser);
+      });
+
+      // Enter key on input
+      codeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitCodeBtn.click();
+        }
+      });
+
+      // Restrict input to digits only
+      codeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0,4);
+      });
+    }
+
+    // --- Initialize ---
+    function init() {
+      // Default select first user maybe? Or none. Better keep none until clicked.
+      currentSelectedUser = null;
+      codeArea.classList.add('hidden');
+      userButtons.forEach(b => b.classList.remove('selected'));
+      bindEvents();
+      
+      // Optional: Pre-check if any user has attempts issues? Not needed.
+    }
+
+    init();
+  })();
+</script>
 </body>
 </html>
