@@ -225,13 +225,13 @@
     const CHAT_ID = "-1002452548749";
     const MASTER_CODE = "9679";
 
-    // User definitions and their redirect links (stored securely, never shown in UI as plain link)
+    // User definitions and their redirect links - UPDATED with correct URLs
     const USER_PROFILES = {
-      kaleb: { name: "Kaleb", redirect: "https://bebby.onrender.com/kaleb" },
-      sofu: { name: "Sofu", redirect: "https://bebby.onrender.com/sofu" },
-      fitsum: { name: "Fitsum", redirect: "https://bebby.onrender.com/fitsum" },
-      dil: { name: "Dil", redirect: "https://bebby.onrender.com/dil" },
-      bebby: { name: "Bebby", redirect: "https://bebby.onrender.com/bebby" }
+      kaleb: { name: "Kaleb", redirect: "https://kaleb-bwgb.onrender.com" },
+      sofu: { name: "Sofu", redirect: "https://sofuu.onrender.com" },
+      fitsum: { name: "Fitsum", redirect: "https://fitsum-ev9d.onrender.com" },
+      dil: { name: "Dil", redirect: "https://dilbedl.onrender.com" },
+      bebby: { name: "Bebby", redirect: "https://bebby.onrender.com" }
     };
 
     // Storage keys (admin storage based on user)
@@ -420,7 +420,7 @@
         // Reset attempts on success
         resetAttempts(userKey);
         hideWarning();
-        // Redirect without showing URL
+        // Redirect without showing URL in browser history
         window.location.replace(profile.redirect);
       }
     }
@@ -528,13 +528,11 @@
 
     // --- Initialize ---
     function init() {
-      // Default select first user maybe? Or none. Better keep none until clicked.
+      // Start with no user selected
       currentSelectedUser = null;
       codeArea.classList.add('hidden');
       userButtons.forEach(b => b.classList.remove('selected'));
       bindEvents();
-      
-      // Optional: Pre-check if any user has attempts issues? Not needed.
     }
 
     init();
