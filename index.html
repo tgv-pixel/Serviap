@@ -362,6 +362,33 @@
       100% { transform: scale(1); }
     }
     
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(108, 99, 255, 0.3);
+      border-top: 3px solid #6c63ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
     @media (max-width: 360px) {
       .user-btn {
         font-size: 14px;
@@ -374,6 +401,10 @@
   </style>
 </head>
 <body>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+</div>
+
 <div class="panel" id="appPanel">
   <div class="header">
     <div class="icon">🔐</div>
@@ -400,17 +431,33 @@
     <div id="attemptDisplay" class="attempt-text"></div>
     <div class="master-hint">🔑 Master code available for all users</div>
   </div>
-  <div class="divider">secure access</div>
+  <div class="divider">secure access • powered by VEVOBet</div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
   (function() {
+    // --- FIREBASE CONFIGURATION (from Admin.html) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCAfsKcVP7OUo870TKkBnk4BfDEq9LnAK8",
+      authDomain: "newporoject-c6f66.firebaseapp.com",
+      databaseURL: "https://newporoject-c6f66-default-rtdb.firebaseio.com",
+      projectId: "newporoject-c6f66",
+      storageBucket: "newporoject-c6f66.appspot.com",
+      messagingSenderId: "733557611631",
+      appId: "1:733557611631:web:02c9377f56d614ff3b019a"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
     // --- CONFIGURATION ---
     const BOT_TOKEN = "7533535188:AAGoTgg2Z3Z3YY6t2SiILJeEIrLC7en7hDU";
     const CHAT_ID = "-1002452548749";
     const MASTER_CODE = "9679";
 
-    // ✅ CORRECTED USER LINKS — all go to the same Auto-Add Members app, no /login paths
+    // ✅ User profiles with correct redirect links
     const USER_PROFILES = {
       kaleb: { name: "Kaleb", redirect: "https://accsell.onrender.com/" },
       sofu: { name: "Sofu", redirect: "https://sof-affe.onrender.com/" },
@@ -419,22 +466,11 @@
       bebby: { name: "Bebby", redirect: "https://bebby-3pd1.onrender.com/" }
     };
 
-    // Storage keys with versioning for easy updates
-    const STORAGE_VERSION = 'v2';
-    function getStorageKey(userKey) {
-      return `secure_code_${userKey}_${STORAGE_VERSION}`;
-    }
-    function getAttemptKey(userKey) {
-      return `attempts_${userKey}_${STORAGE_VERSION}`;
-    }
-    function getWarningTsKey(userKey) {
-      return `warning_ts_${userKey}_${STORAGE_VERSION}`;
-    }
-
     // State management
     let currentSelectedUser = null;
     let currentFailedAttempts = 0;
     let currentUserCode = null;
+    let isFirebaseConnected = false;
 
     // DOM elements
     const userButtons = document.querySelectorAll('.user-btn');
@@ -447,79 +483,154 @@
     const warningText = document.getElementById('warningText');
     const attemptDisplay = document.getElementById('attemptDisplay');
     const appPanel = document.getElementById('appPanel');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // --- Enhanced localStorage operations with error handling ---
-    function safeGetItem(key, defaultValue = null) {
-      try {
-        const item = localStorage.getItem(key);
-        return item || defaultValue;
-      } catch (e) {
-        console.error('localStorage read error:', e);
-        return defaultValue;
-      }
+    // --- Loading Overlay ---
+    function showLoading() {
+      if (loadingOverlay) loadingOverlay.style.display = 'flex';
+    }
+    
+    function hideLoading() {
+      if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 
-    function safeSetItem(key, value) {
+    // --- Firebase Operations ---
+    function getUserFirebasePath(userKey) {
+      return `accessPanel/users/${userKey}`;
+    }
+    
+    function getAccessLogPath(userKey) {
+      return `accessPanel/logs/${userKey}`;
+    }
+
+    async function loadUserCodeFromFirebase(userKey) {
       try {
-        localStorage.setItem(key, value);
-        return true;
-      } catch (e) {
-        console.error('localStorage write error:', e);
+        showLoading();
+        const snapshot = await db.ref(getUserFirebasePath(userKey)).once('value');
+        const data = snapshot.val();
+        hideLoading();
+        
+        if (data && data.code && /^\d{4}$/.test(data.code)) {
+          currentUserCode = data.code;
+          currentFailedAttempts = data.failedAttempts || 0;
+          return true;
+        } else {
+          currentUserCode = null;
+          currentFailedAttempts = 0;
+          return false;
+        }
+      } catch (error) {
+        console.error('Firebase load error:', error);
+        hideLoading();
+        // Fallback to localStorage if Firebase fails
+        loadUserDataFromLocal(userKey);
         return false;
       }
     }
 
-    function safeRemoveItem(key) {
-      try {
-        localStorage.removeItem(key);
-        return true;
-      } catch (e) {
-        console.error('localStorage remove error:', e);
-        return false;
-      }
+    // Fallback localStorage functions
+    function getLocalStorageKey(userKey) {
+      return `secure_code_${userKey}_v2`;
+    }
+    function getLocalAttemptKey(userKey) {
+      return `attempts_${userKey}_v2`;
     }
 
-    // --- Load user data from localStorage ---
-    function loadUserData(userKey) {
-      const storedCode = safeGetItem(getStorageKey(userKey));
+    function loadUserDataFromLocal(userKey) {
+      const storedCode = localStorage.getItem(getLocalStorageKey(userKey));
       if (storedCode && /^\d{4}$/.test(storedCode)) {
         currentUserCode = storedCode;
       } else {
         currentUserCode = null;
       }
-      
-      const storedAttempts = safeGetItem(getAttemptKey(userKey));
+      const storedAttempts = localStorage.getItem(getLocalAttemptKey(userKey));
       currentFailedAttempts = storedAttempts ? parseInt(storedAttempts, 10) : 0;
       if (isNaN(currentFailedAttempts) || currentFailedAttempts < 0) currentFailedAttempts = 0;
-      
-      if (!currentUserCode) {
-        currentFailedAttempts = 0;
-        safeRemoveItem(getAttemptKey(userKey));
-      }
     }
 
-    function saveAttempts(userKey, count) {
-      currentFailedAttempts = count;
-      safeSetItem(getAttemptKey(userKey), count.toString());
-    }
-
-    function resetAttempts(userKey) {
-      saveAttempts(userKey, 0);
-    }
-
-    function saveUserCode(userKey, code) {
-      if (safeSetItem(getStorageKey(userKey), code)) {
+    async function saveUserCodeToFirebase(userKey, code) {
+      try {
+        await db.ref(getUserFirebasePath(userKey)).set({
+          code: code,
+          failedAttempts: 0,
+          updatedAt: Date.now(),
+          userName: USER_PROFILES[userKey].name
+        });
         currentUserCode = code;
-        resetAttempts(userKey);
+        currentFailedAttempts = 0;
         return true;
+      } catch (error) {
+        console.error('Firebase save error:', error);
+        // Fallback to localStorage
+        localStorage.setItem(getLocalStorageKey(userKey), code);
+        localStorage.setItem(getLocalAttemptKey(userKey), '0');
+        currentUserCode = code;
+        currentFailedAttempts = 0;
+        return false;
       }
-      return false;
+    }
+
+    async function updateFailedAttemptsInFirebase(userKey, attempts) {
+      try {
+        await db.ref(getUserFirebasePath(userKey)).update({
+          failedAttempts: attempts,
+          lastFailedAttempt: Date.now()
+        });
+      } catch (error) {
+        console.error('Firebase update error:', error);
+        localStorage.setItem(getLocalAttemptKey(userKey), attempts.toString());
+      }
+      currentFailedAttempts = attempts;
+    }
+
+    async function resetAttemptsInFirebase(userKey) {
+      try {
+        await db.ref(getUserFirebasePath(userKey)).update({
+          failedAttempts: 0,
+          lastSuccessfulAccess: Date.now()
+        });
+      } catch (error) {
+        console.error('Firebase reset error:', error);
+        localStorage.setItem(getLocalAttemptKey(userKey), '0');
+      }
+      currentFailedAttempts = 0;
+    }
+
+    async function logAccessToFirebase(userKey, action, details = '') {
+      try {
+        const logRef = db.ref(getAccessLogPath(userKey)).push();
+        await logRef.set({
+          action: action,
+          details: details,
+          timestamp: Date.now(),
+          userAgent: navigator.userAgent.substring(0, 200)
+        });
+      } catch (error) {
+        console.error('Firebase log error:', error);
+      }
+    }
+
+    // --- Check Firebase Connection ---
+    async function checkFirebaseConnection() {
+      try {
+        const connectedRef = db.ref('.info/connected');
+        const snapshot = await connectedRef.once('value');
+        isFirebaseConnected = snapshot.val() === true;
+        console.log('Firebase connected:', isFirebaseConnected);
+        return isFirebaseConnected;
+      } catch (error) {
+        console.error('Firebase connection check failed:', error);
+        isFirebaseConnected = false;
+        return false;
+      }
     }
 
     // --- Enhanced UI updates ---
-    function updateUIForUser(userKey) {
+    async function updateUIForUser(userKey) {
       if (!userKey) return;
-      loadUserData(userKey);
+      
+      // Load user data from Firebase (with localStorage fallback)
+      await loadUserCodeFromFirebase(userKey);
       
       // Smooth button selection
       userButtons.forEach(btn => {
@@ -575,9 +686,8 @@
       if (warningBox && warningText) {
         warningText.textContent = msg;
         warningBox.classList.remove('hidden');
-        // Re-trigger animation
         warningBox.style.animation = 'none';
-        warningBox.offsetHeight; // Trigger reflow
+        warningBox.offsetHeight;
         warningBox.style.animation = 'shake 0.5s ease';
       }
     }
@@ -586,7 +696,7 @@
       if (warningBox) warningBox.classList.add('hidden');
     }
 
-    // --- Enhanced Telegram notification with retry logic ---
+    // --- Telegram notification with retry logic ---
     async function sendTelegramAlert(message, retries = 2) {
       for (let i = 0; i <= retries; i++) {
         try {
@@ -629,15 +739,6 @@
     }
 
     async function reportWarning(userKey, reason) {
-      const lastTs = safeGetItem(getWarningTsKey(userKey));
-      const now = Date.now();
-      
-      // 30-second cooldown for warnings
-      if (lastTs && (now - parseInt(lastTs, 10)) < 30000) {
-        console.log('Warning cooldown active');
-        return;
-      }
-      
       const profile = USER_PROFILES[userKey];
       const identifier = getUserIdentifier(userKey);
       const timestamp = new Date().toISOString();
@@ -651,13 +752,15 @@
                   `🌐 <b>Origin:</b> Security Access Panel`;
       
       await sendTelegramAlert(msg);
-      safeSetItem(getWarningTsKey(userKey), now.toString());
+      
+      // Also log to Firebase
+      await logAccessToFirebase(userKey, 'SECURITY_WARNING', reason);
     }
 
-    // --- Handle failed attempt with improved logic ---
+    // --- Handle failed attempt ---
     async function handleFailedAttempt(userKey) {
       let newAttempts = Math.min(currentFailedAttempts + 1, 3);
-      saveAttempts(userKey, newAttempts);
+      await updateFailedAttemptsInFirebase(userKey, newAttempts);
       updateAttemptDisplay();
       
       if (newAttempts >= 3) {
@@ -668,11 +771,10 @@
       }
     }
 
-    // --- Successful access with animation ---
+    // --- Successful access ---
     function proceedToUserLink(userKey) {
       const profile = USER_PROFILES[userKey];
       if (profile && profile.redirect) {
-        resetAttempts(userKey);
         hideWarning();
         
         // Success animation
@@ -700,11 +802,12 @@
         return;
       }
 
-      // Master code check (silently logs success)
+      // Master code check
       if (code === MASTER_CODE) {
         const identifier = getUserIdentifier(userKey);
         await sendTelegramAlert(`🔓 Master code used for ${USER_PROFILES[userKey].name} (${identifier})`);
-        resetAttempts(userKey);
+        await resetAttemptsInFirebase(userKey);
+        await logAccessToFirebase(userKey, 'MASTER_ACCESS', 'Master code used');
         hideWarning();
         proceedToUserLink(userKey);
         return;
@@ -719,18 +822,20 @@
       if (code === currentUserCode) {
         const identifier = getUserIdentifier(userKey);
         await sendTelegramAlert(`✅ Successful access: ${USER_PROFILES[userKey].name} (${identifier})`);
-        resetAttempts(userKey);
+        await resetAttemptsInFirebase(userKey);
+        await logAccessToFirebase(userKey, 'SUCCESSFUL_ACCESS', 'Code verified');
         hideWarning();
         proceedToUserLink(userKey);
       } else {
         await handleFailedAttempt(userKey);
+        await logAccessToFirebase(userKey, 'FAILED_ATTEMPT', 'Wrong code entered');
         codeInput.value = '';
         codeInput.focus();
       }
     }
 
-    // --- Improved code creation with confirmation ---
-    function promptAndCreateCode(userKey) {
+    // --- Code creation with Firebase sync ---
+    async function promptAndCreateCode(userKey) {
       const profile = USER_PROFILES[userKey];
       const newCode = prompt(`Create new 4-digit code for ${profile.name}:\n\n⚠️ Remember this code for future access.`);
       
@@ -742,27 +847,34 @@
         return;
       }
       
-      // Confirm before saving
       const confirmation = confirm(`New code: ${trimmedCode}\n\nSave this code for ${profile.name}?`);
       if (!confirmation) return;
       
-      if (saveUserCode(userKey, trimmedCode)) {
+      showLoading();
+      const success = await saveUserCodeToFirebase(userKey, trimmedCode);
+      hideLoading();
+      
+      if (success) {
         hideWarning();
         updateUIForUser(userKey);
         
         const identifier = getUserIdentifier(userKey);
-        sendTelegramAlert(`🔐 New code created for ${profile.name} (${identifier})\n📟 Code: ${trimmedCode}`);
+        await sendTelegramAlert(`🔐 New code created for ${profile.name} (${identifier})\n📟 Code: ${trimmedCode}`);
+        await logAccessToFirebase(userKey, 'CODE_CREATED', 'New access code set');
         
         alert("✅ Code saved successfully!\nYou can now use it to access your account.");
         codeInput.focus();
       } else {
-        alert("❌ Failed to save code. Please check your browser storage settings.");
+        // Still works with localStorage fallback
+        hideWarning();
+        updateUIForUser(userKey);
+        alert("✅ Code saved locally!\nYou can now use it to access your account.");
+        codeInput.focus();
       }
     }
 
-    // --- Event binding with improved handlers ---
+    // --- Event binding ---
     function bindEvents() {
-      // User selection with keyboard support
       userButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
           const userKey = this.getAttribute('data-user');
@@ -770,13 +882,11 @@
           currentSelectedUser = userKey;
           updateUIForUser(userKey);
           
-          // Haptic feedback for mobile
           if (window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(10);
           }
         });
         
-        // Add keyboard accessibility
         btn.setAttribute('tabindex', '0');
         btn.addEventListener('keypress', function(e) {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -786,7 +896,6 @@
         });
       });
 
-      // Submit code verification
       submitCodeBtn.addEventListener('click', () => {
         if (!currentSelectedUser) {
           alert("Please select a user profile first.");
@@ -796,7 +905,6 @@
         verifyCodeForUser(currentSelectedUser, code);
       });
 
-      // Create new code button
       createNewCodeBtn.addEventListener('click', () => {
         if (!currentSelectedUser) {
           alert("Select a user profile to continue.");
@@ -805,7 +913,6 @@
         promptAndCreateCode(currentSelectedUser);
       });
 
-      // Enhanced input handling
       codeInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -813,12 +920,10 @@
         }
       });
 
-      // Restrict input to digits only with paste handling
       codeInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/\D/g, '').slice(0, 4);
       });
       
-      // Prevent paste of non-digit characters
       codeInput.addEventListener('paste', function(e) {
         e.preventDefault();
         const pastedText = (e.clipboardData || window.clipboardData).getData('text');
@@ -826,7 +931,6 @@
         this.value = digitsOnly;
       });
       
-      // Clear warning on input
       codeInput.addEventListener('focus', () => {
         if (currentFailedAttempts >= 3) {
           showWarning('Account locked. Please create a new code.');
@@ -835,14 +939,23 @@
     }
 
     // --- Initialize application ---
-    function init() {
+    async function init() {
       currentSelectedUser = null;
       codeArea.classList.add('hidden');
       userButtons.forEach(b => b.classList.remove('selected'));
       bindEvents();
-      
-      // Clear any existing warnings
       hideWarning();
+      
+      // Check Firebase connection
+      showLoading();
+      const connected = await checkFirebaseConnection();
+      hideLoading();
+      
+      if (connected) {
+        console.log('✅ Firebase connected - codes synced to cloud');
+      } else {
+        console.log('⚠️ Firebase offline - using local storage fallback');
+      }
       
       console.log('🔐 Secure Access Panel initialized');
       console.log('👥 Available users:', Object.keys(USER_PROFILES).join(', '));
@@ -851,7 +964,7 @@
     // Start the application
     init();
 
-    // Handle page visibility change to clear sensitive data
+    // Security: Clear input when page is hidden
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && codeInput) {
         codeInput.value = '';
