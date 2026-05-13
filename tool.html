@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Tools Marketplace - የሳይበር መሳሪያዎች ገበያ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0d1117 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #ff4444;
+            border-radius: 25px;
+            padding: 8px 15px;
+            display: flex;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .lang-btn.active {
+            background: #ff4444;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
+        }
+
+        .lang-btn:hover {
+            color: #ff4444;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 2px solid #ff4444;
+            margin-bottom: 40px;
+        }
+
+        .glitch-text {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #ff4444;
+            text-shadow: 0 0 10px #ff4444, 0 0 20px #ff0000;
+            animation: glitch 2s infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0 0 10px #ff4444, 0 0 20px #ff0000; }
+            25% { text-shadow: -2px 0 #ff0000, 2px 0 #0000ff; }
+            50% { text-shadow: 2px 0 #ff0000, -2px 0 #0000ff; }
+            75% { text-shadow: 0 0 10px #ff4444, 0 0 20px #ff0000; }
+            100% { text-shadow: 0 0 10px #ff4444, 0 0 20px #ff0000; }
+        }
+
+        .payment-info-section {
+            display: none;
+            margin: 30px auto;
+            max-width: 700px;
+        }
+
+        .payment-info-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cbe-banner, .ton-banner {
+            background: linear-gradient(135deg, #1a1a3e, #2a1a3e);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .ton-banner {
+            border-color: #0088cc;
+            box-shadow: 0 0 30px rgba(0, 136, 204, 0.3);
+        }
+
+        .payment-method-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .ton-banner .payment-method-title {
+            color: #0088cc;
+        }
+
+        .cbe-logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .ton-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: #0088cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .account-details {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid #ffd700;
+        }
+
+        .ton-banner .account-details {
+            border-color: #0088cc;
+        }
+
+        .account-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffd700;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            margin: 10px 0;
+        }
+
+        .ton-address {
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #0088cc;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 136, 204, 0.5);
+            margin: 10px 0;
+            word-break: break-all;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .account-name {
+            font-size: 1.3em;
+            color: #ffd700;
+            margin: 10px 0;
+        }
+
+        .copy-btn {
+            background: #ffd700;
+            color: #0a0e27;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .copy-btn:hover {
+            background: #ffed4a;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .copy-btn.ton {
+            background: #0088cc;
+            color: white;
+        }
+
+        .copy-btn.ton:hover {
+            background: #00a8ff;
+            box-shadow: 0 0 20px rgba(0, 136, 204, 0.6);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px);
+            border-color: #ff4444;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tool-card.premium {
+            border: 2px solid #ffd700;
+            background: rgba(255, 215, 0, 0.05);
+            grid-column: 1 / -1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tool-card.premium:hover {
+            border-color: #ffd700;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+        }
+
+        .premium-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #0a0e27;
+            padding: 8px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1em;
+            animation: pulse 2s infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px #ffd700; }
+            50% { box-shadow: 0 0 30px #ffd700, 0 0 50px #ffaa00; }
+        }
+
+        .tool-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .premium .tool-icon {
+            font-size: 5em;
+        }
+
+        .tool-name {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #ff4444;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .premium .tool-name {
+            font-size: 2em;
+            color: #ffd700;
+        }
+
+        .tool-description {
+            color: #ccc;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .tool-price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd700;
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .premium .tool-price {
+            font-size: 2.5em;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin: 15px 0;
+            padding: 0;
+        }
+
+        .tool-features li {
+            padding: 5px 0;
+            color: #aaa;
+        }
+
+        .tool-features li:before {
+            content: "✓ ";
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .premium .tool-features li:before {
+            color: #ffd700;
+        }
+
+        .premium .tool-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px 20px;
+        }
+
+        .select-btn {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .select-btn:hover {
+            background: linear-gradient(45deg, #cc0000, #ff4444);
+            box-shadow: 0 0 25px rgba(255, 68, 68, 0.6);
+            transform: scale(1.05);
+        }
+
+        .premium .select-btn {
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #0a0e27;
+            font-size: 1.3em;
+        }
+
+        .premium .select-btn:hover {
+            background: linear-gradient(45deg, #ffaa00, #ffd700);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a3e, #0a0e27);
+            border: 2px solid #ff4444;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 550px;
+            margin: 50px auto;
+            position: relative;
+            box-shadow: 0 0 50px rgba(255, 68, 68, 0.5);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            color: #ff0000;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #ff4444;
+            text-shadow: 0 0 10px #ff0000;
+            transform: scale(1.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            outline: none;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ffd700;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .payment-method.ton-method {
+            border-color: #0088cc;
+        }
+
+        .payment-method.ton-method:hover {
+            background: rgba(0, 136, 204, 0.2);
+            box-shadow: 0 0 15px rgba(0, 136, 204, 0.3);
+        }
+
+        .payment-method input[type="radio"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .payment-method label {
+            cursor: pointer;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .ton-method label {
+            color: #0088cc;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(45deg, #cc0000, #ff4444);
+            box-shadow: 0 0 25px rgba(255, 68, 68, 0.6);
+        }
+
+        .submit-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .screenshot-upload {
+            border: 2px dashed #ff4444;
+            padding: 25px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .screenshot-upload:hover {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: #ffd700;
+        }
+
+        .warning-banner {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 0.95em;
+        }
+
+        .success-message {
+            display: none;
+            color: #00ff88;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.3em;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .loading-spinner {
+            display: none;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #ff4444;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .copied-tooltip {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ff88;
+            color: #0a0e27;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 3000;
+            display: none;
+            animation: slideDown 0.5s ease;
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+
+        .select-tool-prompt {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            font-size: 1.2em;
+            border: 2px dashed #444;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .glitch-text {
+                font-size: 2em;
+            }
+            .premium .tool-features {
+                grid-template-columns: 1fr;
+            }
+            .tool-card.premium {
+                max-width: 100%;
+            }
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
+            }
+            .payment-methods {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Copied Tooltip -->
+    <div class="copied-tooltip" id="copied-tooltip">✓ Copied!</div>
+
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="switchLanguage('am')">አማ</button>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1 class="glitch-text" id="main-title">CYBER TOOLS MARKETPLACE</h1>
+            <p id="subtitle" style="font-size: 1.2em; color: #ff4444;">Advanced Security & Hacking Tools</p>
+        </header>
+
+        <!-- Payment Information Section -->
+        <div class="payment-info-section" id="payment-info-section">
+            <!-- CBE Payment Banner -->
+            <div class="cbe-banner">
+                <div class="payment-method-title">🏦 CBE Bank Transfer</div>
+                <svg class="cbe-logo" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="60" rx="10" fill="#1a3a5c"/>
+                    <text x="20" y="40" font-family="Arial" font-size="24" font-weight="bold" fill="#ffd700">CBE</text>
+                    <text x="80" y="35" font-family="Arial" font-size="12" fill="white">Commercial Bank</text>
+                    <text x="80" y="50" font-family="Arial" font-size="12" fill="white">of Ethiopia</text>
+                </svg>
+                
+                <div class="account-details">
+                    <p style="color: #ffd700; font-size: 1.2em; margin-bottom: 15px;">
+                        <strong id="bank-label">Bank Account Details</strong>
+                    </p>
+                    <div class="account-number" id="account-number">1000612391754</div>
+                    <button class="copy-btn" onclick="copyToClipboard('1000612391754')">
+                        📋 <span id="copy-btn-cbe">Copy Account Number</span>
+                    </button>
+                    <div class="account-name" style="margin-top: 15px;">
+                        <strong id="account-holder-label">Account Holder:</strong><br>
+                        <span style="font-size: 1.3em;" id="account-holder">Abenezer Shigute</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TON Network Banner -->
+            <div class="ton-banner">
+                <div class="payment-method-title">💎 TON Network</div>
+                <div class="ton-logo">TON</div>
+                
+                <div class="account-details">
+                    <p style="color: #0088cc; font-size: 1.2em; margin-bottom: 15px;">
+                        <strong>TON Wallet Address</strong>
+                    </p>
+                    <div class="ton-address">UQB37g1e9sANIvwdJd3mmxtqveSBae0y-bpqX7DXQPH3c9Lb</div>
+                    <button class="copy-btn ton" onclick="copyToClipboard('UQB37g1e9sANIvwdJd3mmxtqveSBae0y-bpqX7DXQPH3c9Lb')">
+                        📋 <span id="copy-btn-ton">Copy TON Address</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Select Tool Prompt -->
+        <div class="select-tool-prompt" id="select-prompt">
+            👆 <span id="prompt-text">Select a service below to view payment details</span>
+        </div>
+
+        <!-- Warning Banner -->
+        <div class="warning-banner" id="warning-banner">
+            ⚠️ Educational purposes only. Use responsibly and legally.
+        </div>
+
+        <!-- Services Grid -->
+        <div class="tools-grid" id="tools-container"></div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" style="color: #ff4444; text-align: center; margin-bottom: 20px;">Complete Your Purchase</h2>
+            <div id="modal-tool-info" style="margin-bottom: 20px;"></div>
+            
+            <form id="payment-form" onsubmit="processPayment(event)">
+                <div class="form-group">
+                    <label id="label-phone">📱 Phone Number / Telegram Username</label>
+                    <input type="text" id="phone" required placeholder="+251... or @username">
+                </div>
+                
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <input type="radio" name="payment" value="cbe" id="cbe" checked>
+                        <label for="cbe">🏦 CBE</label>
+                    </div>
+                    <div class="payment-method ton-method">
+                        <input type="radio" name="payment" value="ton" id="ton">
+                        <label for="ton">💎 TON</label>
+                    </div>
+                    <div class="payment-method">
+                        <input type="radio" name="payment" value="telebirr" id="telebirr">
+                        <label for="telebirr">📱 TeleBirr</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="label-screenshot">📸 Payment Screenshot</label>
+                    <div class="screenshot-upload" onclick="document.getElementById('screenshot').click()">
+                        <p id="upload-text" style="color: #888;">Click to upload screenshot</p>
+                        <input type="file" id="screenshot" accept="image/*" style="display: none" onchange="handleFileUpload(event)">
+                    </div>
+                    <div id="file-preview"></div>
+                </div>
+
+                <div class="loading-spinner" id="loading-spinner"></div>
+                <button type="submit" class="submit-btn" id="submit-btn">✅ Confirm Payment</button>
+            </form>
+
+            <div class="success-message" id="success-message">
+                ✅ Payment submitted successfully! We'll verify and deliver your tool.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const TELEGRAM_BOT_TOKEN = '8123864355:AAEyLh0aG7SA-yRQo1s16vsiIEPdPo82FIE';
+        const TELEGRAM_CHAT_ID = '894002841';
+        const CBE_ACCOUNT = '1000612391754';
+        const CBE_ACCOUNT_NAME = 'Abenezer Shigute';
+        const TON_ADDRESS = 'UQB37g1e9sANIvwdJd3mmxtqveSBae0y-bpqX7DXQPH3c9Lb';
+
+        // Language Data
+        const languages = {
+            en: {
+                title: "CYBER TOOLS MARKETPLACE",
+                subtitle: "Advanced Security & Hacking Tools",
+                warning: "⚠️ Educational purposes only. Use responsibly and legally.",
+                bankLabel: "Bank Account Details",
+                copyBtnCBE: "Copy Account Number",
+                copyBtnTON: "Copy TON Address",
+                accountHolderLabel: "Account Holder:",
+                accountHolder: "Abenezer Shigute",
+                modalTitle: "Complete Your Purchase",
+                labelPhone: "📱 Phone Number / Telegram Username",
+                labelScreenshot: "📸 Payment Screenshot",
+                uploadText: "Click to upload screenshot",
+                submitBtn: "✅ Confirm Payment",
+                successMsg: "✅ Payment submitted successfully! We'll verify and deliver your tool.",
+                copiedMsg: "✓ Copied!",
+                promptText: "Select a service below to view payment details",
+                premiumBadge: "🔥 PREMIUM BUNDLE",
+                selectBtn: "SELECT & VIEW PAYMENT",
+                buyNow: "BUY NOW",
+                services: [
+                    {
+                        name: "Android RAT",
+                        icon: "🤖",
+                        description: "Complete Android Remote Access Tool with all features included. Full device control suite.",
+                        price: "$299.99",
+                        premium: true,
+                        features: [
+                            "Remote Control",
+                            "Gallery Access",
+                            "Call Log Access",
+                            "Contact List",
+                            "Call Forwarding",
+                            "Camera Capture (Front & Back)",
+                            "Email Harvesting",
+                            "Social Media Phishing",
+                            "SMS Forward / OTP",
+                            "Telegram Access",
+                            "File Detection & Deletion",
+                            "File Reception",
+                            "Tutorial Included",
+                            "Virtual Number for Telegram"
+                        ]
+                    },
+                    {
+                        name: "Remote Control",
+                        icon: "🎮",
+                        description: "Remote device control service for Android devices.",
+                        price: "$49.99",
+                        premium: false,
+                        features: ["Screen Mirroring", "Touch Control", "Keyboard Input", "App Management"]
+                    },
+                    {
+                        name: "Gallery Access",
+                        icon: "🖼️",
+                        description: "Access and download gallery content from target device.",
+                        price: "$29.99",
+                        premium: false,
+                        features: ["Photo Access", "Video Access", "Album Browsing", "Download Capability"]
+                    },
+                    {
+                        name: "Call Log Access",
+                        icon: "📞",
+                        description: "Retrieve and monitor call logs from target device.",
+                        price: "$24.99",
+                        premium: false,
+                        features: ["Incoming Calls", "Outgoing Calls", "Missed Calls", "Duration Tracking"]
+                    },
+                    {
+                        name: "Contact List",
+                        icon: "📇",
+                        description: "Extract complete contact list from target device.",
+                        price: "$19.99",
+                        premium: false,
+                        features: ["All Contacts", "Export to CSV", "Contact Details", "Real-time Sync"]
+                    },
+                    {
+                        name: "Call Forwarding",
+                        icon: "↗️",
+                        description: "Setup call forwarding to intercept incoming calls.",
+                        price: "$34.99",
+                        premium: false,
+                        features: ["Auto Forward", "Custom Number", "Stealth Mode", "Notification Block"]
+                    },
+                    {
+                        name: "Camera Capture Front & Back",
+                        icon: "📷",
+                        description: "Remotely capture photos from both cameras.",
+                        price: "$44.99",
+                        premium: false,
+                        features: ["Front Camera", "Back Camera", "Silent Capture", "Auto Upload"]
+                    },
+                    {
+                        name: "Email Harvesting",
+                        icon: "📧",
+                        description: "Collect email addresses and credentials from device.",
+                        price: "$39.99",
+                        premium: false,
+                        features: ["Gmail Access", "Email Extraction", "Attachment Download", "Auto Forward"]
+                    },
+                    {
+                        name: "Social Media Phishing",
+                        icon: "🎣",
+                        description: "Create phishing pages for social media platforms.",
+                        price: "$54.99",
+                        premium: false,
+                        features: ["Facebook", "Instagram", "Twitter", "Custom Templates"]
+                    },
+                    {
+                        name: "SMS Forward / OTP",
+                        icon: "💬",
+                        description: "Forward SMS and capture OTP codes automatically.",
+                        price: "$39.99",
+                        premium: false,
+                        features: ["SMS Forwarding", "OTP Capture", "Auto Delete", "Real-time Alerts"]
+                    },
+                    {
+                        name: "Telegram Access",
+                        icon: "✈️",
+                        description: "Access Telegram messages and media from target device.",
+                        price: "$34.99",
+                        premium: false,
+                        features: ["Message Access", "Media Download", "Contact Export", "Channel Monitor"]
+                    },
+                    {
+                        name: "File Detection & Deletion",
+                        icon: "🗑️",
+                        description: "Detect and remotely delete files from device.",
+                        price: "$29.99",
+                        premium: false,
+                        features: ["File Scanner", "Selective Delete", "Secure Erase", "Directory Browse"]
+                    },
+                    {
+                        name: "File Reception",
+                        icon: "📥",
+                        description: "Receive files remotely from target device.",
+                        price: "$24.99",
+                        premium: false,
+                        features: ["File Transfer", "Multi-format", "Auto Download", "Cloud Storage"]
+                    },
+                    {
+                        name: "Tutorial",
+                        icon: "📚",
+                        description: "Complete tutorial package for all tools and techniques.",
+                        price: "$14.99",
+                        premium: false,
+                        features: ["Video Tutorials", "PDF Guides", "Step-by-Step", "Live Support"]
+                    },
+                    {
+                        name: "Virtual Number for Telegram",
+                        icon: "🔢",
+                        description: "Get virtual phone numbers for Telegram registration.",
+                        price: "$9.99",
+                        premium: false,
+                        features: ["Multiple Numbers", "Instant Activation", "OTP Reception", "Worldwide Numbers"]
+                    }
+                ]
+            },
+            am: {
+                title: "የሳይበር መሳሪያዎች ገበያ",
+                subtitle: "የላቀ የደህንነት እና የሃኪንግ መሳሪያዎች",
+                warning: "⚠️ ለትምህርታዊ ዓላማ ብቻ። በኃላፊነት እና በህጋዊ መንገድ ይጠቀሙ።",
+                bankLabel: "የባንክ ሂሳብ ዝርዝሮች",
+                copyBtnCBE: "የሂሳብ ቁጥር ቅዳ",
+                copyBtnTON: "የTON አድራሻ ቅዳ",
+                accountHolderLabel: "የሂሳብ ባለቤት:",
+                accountHolder: "አቤኔዘር ሽጉጤ",
+                modalTitle: "ግዢዎን ያጠናቅቁ",
+                labelPhone: "📱 ስልክ ቁጥር / የቴሌግራም ስም",
+                labelScreenshot: "📸 የክፍያ ማረጋገጫ ቅጽበታዊ ገጽ እይታ",
+                uploadText: "ቅጽበታዊ ገጽ እይታ ለመስቀል ጠቅ ያድርጉ",
+                submitBtn: "✅ ክፍያ አረጋግጥ",
+                successMsg: "✅ ክፍያ በተሳካ ሁኔታ ገብቷል! እናረጋግጥና መሳሪያዎን እንልካለን።",
+                copiedMsg: "✓ ተቀድቷል!",
+                promptText: "የክፍያ ዝርዝሮችን ለማየት ከታች አገልግሎት ይምረጡ",
+                premiumBadge: "🔥 ፕሪሚየም ጥቅል",
+                selectBtn: "ይምረጡ እና ክፍያ ይመልከቱ",
+                buyNow: "አሁን ይግዙ",
+                services: [
+                    {
+                        name: "Android RAT",
+                        icon: "🤖",
+                        description: "ሁሉንም ባህሪያት ያካተተ የተሟላ የAndroid የርቀት መዳረሻ መሳሪያ።",
+                        price: "15,000 ብር",
+                        premium: true,
+                        features: [
+                            "የርቀት መቆጣጠሪያ",
+                            "የጋለሪ መዳረሻ",
+                            "የጥሪ ማስታወሻ መዳረሻ",
+                            "የእውቂያ ዝርዝር",
+                            "የጥሪ ማስተላለፍ",
+                            "የካሜራ ቀረጻ (ፊት እና ኋላ)",
+                            "የኢሜይል መሰብሰብ",
+                            "የማህበራዊ ሚዲያ ማጥመድ",
+                            "SMS ማስተላለፍ / OTP",
+                            "የቴሌግራም መዳረሻ",
+                            "የፋይል ማወቂያ እና መሰረዝ",
+                            "የፋይል መቀበል",
+                            "ትምህርት ተካቷል",
+                            "ለቴሌግራም ምናባዊ ቁጥር"
+                        ]
+                    },
+                    {
+                        name: "የርቀት መቆጣጠሪያ",
+                        icon: "🎮",
+                        description: "ለAndroid መሳሪያዎች የርቀት መቆጣጠሪያ አገልግሎት።",
+                        price: "2,500 ብር",
+                        premium: false,
+                        features: ["ስክሪን ማንጸባረቅ", "ንክኪ መቆጣጠር", "የቁልፍ ሰሌዳ ግቤት", "የመተግበሪያ አስተዳደር"]
+                    },
+                    {
+                        name: "የጋለሪ መዳረሻ",
+                        icon: "🖼️",
+                        description: "ከዒላማ መሳሪያ የጋለሪ ይዘት መድረስ እና ማውረድ።",
+                        price: "1,500 ብር",
+                        premium: false,
+                        features: ["የፎቶ መዳረሻ", "የቪዲዮ መዳረሻ", "የአልበም ማሰስ", "የማውረድ ችሎታ"]
+                    },
+                    {
+                        name: "የጥሪ ማስታወሻ መዳረሻ",
+                        icon: "📞",
+                        description: "ከዒላማ መሳሪያ የጥሪ ማስታወሻዎችን ሰርስሮ ማውጣት እና መከታተል።",
+                        price: "1,200 ብር",
+                        premium: false,
+                        features: ["ገቢ ጥሪዎች", "ወጪ ጥሪዎች", "ያልተመለሱ ጥሪዎች", "የቆይታ ክትትል"]
+                    },
+                    {
+                        name: "የእውቂያ ዝርዝር",
+                        icon: "📇",
+                        description: "ከዒላማ መሳሪያ ሙሉ የእውቂያ ዝርዝር ማውጣት።",
+                        price: "1,000 ብር",
+                        premium: false,
+                        features: ["ሁሉም እውቂያዎች", "ወደ CSV መላክ", "የእውቂያ ዝርዝሮች", "በቅጽበት ማመሳሰል"]
+                    },
+                    {
+                        name: "የጥሪ ማስተላለፍ",
+                        icon: "↗️",
+                        description: "ገቢ ጥሪዎችን ለመጥለፍ የጥሪ ማስተላለፍ ያዘጋጁ።",
+                        price: "1,800 ብር",
+                        premium: false,
+                        features: ["ራስ-ሰር ማስተላለፍ", "ብጁ ቁጥር", "ስውር ሁነታ", "የማሳወቂያ ማገድ"]
+                    },
+                    {
+                        name: "የካሜራ ቀረጻ ፊት እና ኋላ",
+                        icon: "📷",
+                        description: "ከሁለቱም ካሜራዎች በርቀት ፎቶ ማንሳት።",
+                        price: "2,200 ብር",
+                        premium: false,
+                        features: ["የፊት ካሜራ", "የኋላ ካሜራ", "ጸጥ ያለ ቀረጻ", "ራስ-ሰር ስቀል"]
+                    },
+                    {
+                        name: "የኢሜይል መሰብሰብ",
+                        icon: "📧",
+                        description: "ከመሳሪያ የኢሜይል አድራሻዎችን እና የምስክርነት ማረጋገጫዎችን መሰብሰብ።",
+                        price: "2,000 ብር",
+                        premium: false,
+                        features: ["Gmail መዳረሻ", "ኢሜይል ማውጣት", "አባሪ ማውረድ", "ራስ-ሰር ማስተላለፍ"]
+                    },
+                    {
+                        name: "የማህበራዊ ሚዲያ ማጥመድ",
+                        icon: "🎣",
+                        description: "ለማህበራዊ ሚዲያ መድረኮች የማጥመጃ ገጾችን ይፍጠሩ።",
+                        price: "2,800 ብር",
+                        premium: false,
+                        features: ["Facebook", "Instagram", "Twitter", "ብጁ አብነቶች"]
+                    },
+                    {
+                        name: "SMS ማስተላለፍ / OTP",
+                        icon: "💬",
+                        description: "SMS ያስተላልፉ እና OTP ኮዶችን በራስ-ሰር ይያዙ።",
+                        price: "2,000 ብር",
+                        premium: false,
+                        features: ["SMS ማስተላለፍ", "OTP መያዝ", "ራስ-ሰር መሰረዝ", "በቅጽበት ማስጠንቀቂያዎች"]
+                    },
+                    {
+                        name: "የቴሌግራም መዳረሻ",
+                        icon: "✈️",
+                        description: "ከዒላማ መሳሪያ የቴሌግራም መልዕክቶችን እና ሚዲያን ይድረሱ።",
+                        price: "1,800 ብር",
+                        premium: false,
+                        features: ["የመልዕክት መዳረሻ", "ሚዲያ ማውረድ", "እውቂያ መላክ", "የቻናል መከታተያ"]
+                    },
+                    {
+                        name: "የፋይል ማወቂያ እና መሰረዝ",
+                        icon: "🗑️",
+                        description: "ከመሳሪያ ፋይሎችን ፈልጎ በርቀት ያጥፉ።",
+                        price: "1,500 ብር",
+                        premium: false,
+                        features: ["የፋይል ስካነር", "የተመረጠ መሰረዝ", "ደህንነቱ የተጠበቀ ማጥፋት", "ማውጫ ማሰስ"]
+                    },
+                    {
+                        name: "የፋይል መቀበል",
+                        icon: "📥",
+                        description: "ከዒላማ መሳሪያ ፋይሎችን በርቀት ይቀበሉ።",
+                        price: "1,200 ብር",
+                        premium: false,
+                        features: ["የፋይል ማስተላለፍ", "ባለብዙ ቅርጸት", "ራስ-ሰር ማውረድ", "የደመና ማከማቻ"]
+                    },
+                    {
+                        name: "ትምህርት",
+                        icon: "📚",
+                        description: "ለሁሉም መሳሪያዎች እና ቴክኒኮች የተሟላ የትምህርት ጥቅል።",
+                        price: "750 ብር",
+                        premium: false,
+                        features: ["የቪዲዮ ትምህርቶች", "PDF መመሪያዎች", "ደረጃ በደረጃ", "የቀጥታ ድጋፍ"]
+                    },
+                    {
+                        name: "ለቴሌግራም ምናባዊ ቁጥር",
+                        icon: "🔢",
+                        description: "ለቴሌግራም ምዝገባ ምናባዊ የስልክ ቁጥሮችን ያግኙ።",
+                        price: "500 ብር",
+                        premium: false,
+                        features: ["ብዙ ቁጥሮች", "ፈጣን ማግበር", "OTP መቀበል", "በዓለም ዙሪያ ቁጥሮች"]
+                    }
+                ]
+            }
+        };
+
+        let currentLanguage = 'en';
+        let selectedService = null;
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const tooltip = document.getElementById('copied-tooltip');
+                tooltip.textContent = languages[currentLanguage].copiedMsg;
+                tooltip.style.display = 'block';
+                setTimeout(() => { tooltip.style.display = 'none'; }, 2000);
+            });
+        }
+
+        // Show payment info
+        function showPaymentInfo() {
+            document.getElementById('payment-info-section').classList.add('active');
+            document.getElementById('select-prompt').style.display = 'none';
+        }
+
+        // Hide payment info
+        function hidePaymentInfo() {
+            document.getElementById('payment-info-section').classList.remove('active');
+            document.getElementById('select-prompt').style.display = 'block';
+        }
+
+        // Send to Telegram
+        async function sendToTelegram(message) {
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'HTML' })
+                });
+                const data = await response.json();
+                return data.ok;
+            } catch (error) {
+                console.error('Telegram send error:', error);
+                return false;
+            }
+        }
+
+        // Send photo to Telegram
+        async function sendPhotoToTelegram(photoBlob, caption) {
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+            const formData = new FormData();
+            formData.append('chat_id', TELEGRAM_CHAT_ID);
+            formData.append('photo', photoBlob, 'payment_screenshot.jpg');
+            formData.append('caption', caption);
+            formData.append('parse_mode', 'HTML');
+            try {
+                const response = await fetch(url, { method: 'POST', body: formData });
+                const data = await response.json();
+                return data.ok;
+            } catch (error) {
+                console.error('Photo send error:', error);
+                return false;
+            }
+        }
+
+        // Switch language
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateContent();
+            if (selectedService) showPaymentInfo();
+        }
+
+        // Update content
+        function updateContent() {
+            const lang = languages[currentLanguage];
+            document.getElementById('main-title').textContent = lang.title;
+            document.getElementById('subtitle').textContent = lang.subtitle;
+            document.getElementById('warning-banner').innerHTML = lang.warning;
+            document.getElementById('bank-label').textContent = lang.bankLabel;
+            document.getElementById('copy-btn-cbe').textContent = lang.copyBtnCBE;
+            document.getElementById('copy-btn-ton').textContent = lang.copyBtnTON;
+            document.getElementById('account-holder-label').textContent = lang.accountHolderLabel;
+            document.getElementById('account-holder').textContent = lang.accountHolder;
+            document.getElementById('prompt-text').textContent = lang.promptText;
+            generateServices();
+        }
+
+        // Generate service cards
+        function generateServices() {
+            const lang = languages[currentLanguage];
+            const container = document.getElementById('tools-container');
+            container.innerHTML = '';
+
+            lang.services.forEach((service, index) => {
+                const card = document.createElement('div');
+                card.className = 'tool-card';
+                if (service.premium) card.classList.add('premium');
+
+                card.innerHTML = `
+                    ${service.premium ? `<div class="premium-badge">${lang.premiumBadge}</div>` : ''}
+                    <div class="tool-icon">${service.icon}</div>
+                    <h3 class="tool-name">${service.name}</h3>
+                    <p class="tool-description">${service.description}</p>
+                    <ul class="tool-features">
+                        ${service.features.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                    <div class="tool-price">${service.price}</div>
+                    <button class="select-btn" onclick="selectService(${index})">
+                        ${lang.selectBtn}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Select service
+        function selectService(index) {
+            selectedService = languages[currentLanguage].services[index];
+            showPaymentInfo();
+            document.getElementById('payment-info-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight effect
+            const section = document.getElementById('payment-info-section');
+            section.style.boxShadow = '0 0 40px rgba(255, 68, 68, 0.5)';
+            setTimeout(() => { section.style.boxShadow = ''; }, 1000);
+
+            // Auto open modal after selection
+            setTimeout(() => openPaymentModal(), 500);
+        }
+
+        // Open payment modal
+        function openPaymentModal() {
+            if (!selectedService) {
+                alert(currentLanguage === 'en' ? 'Please select a service first!' : 'እባክዎ መጀመሪያ አገልግሎት ይምረጡ!');
+                return;
+            }
+
+            const lang = languages[currentLanguage];
+            document.getElementById('modal-title').textContent = lang.modalTitle;
+            document.getElementById('label-phone').textContent = lang.labelPhone;
+            document.getElementById('label-screenshot').textContent = lang.labelScreenshot;
+            document.getElementById('upload-text').textContent = lang.uploadText;
+            document.getElementById('submit-btn').textContent = lang.submitBtn;
+
+            document.getElementById('modal-tool-info').innerHTML = `
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 1px solid #ff4444;">
+                    <p style="font-size: 1.3em; color: #ff4444;"><strong>${selectedService.name}</strong></p>
+                    <p style="font-size: 1.5em; color: #ffd700;"><strong>${selectedService.price}</strong></p>
+                    <hr style="border-color: #333; margin: 10px 0;">
+                    <p style="color: #ffd700;"><strong>🏦 CBE:</strong> ${CBE_ACCOUNT}</p>
+                    <p style="color: #ffd700;"><strong>👤 Account:</strong> ${CBE_ACCOUNT_NAME}</p>
+                    <p style="color: #0088cc;"><strong>💎 TON:</strong> ${TON_ADDRESS.substring(0, 20)}...</p>
+                </div>
+            `;
+
+            document.getElementById('payment-modal').style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+            document.getElementById('payment-form').style.display = 'block';
+            document.getElementById('phone').value = '';
+            document.getElementById('file-preview').innerHTML = '';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('file-preview');
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <div style="text-align: center; margin-top: 15px;">
+                            <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid #ff4444;">
+                            <p style="color: #00ff88; margin-top: 8px;">✅ ${file.name}</p>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else if (file) {
+                preview.innerHTML = '<p style="color: #ff0000;">❌ Please upload an image file</p>';
+            }
+        }
+
+        // Process payment
+        async function processPayment(event) {
+            event.preventDefault();
+
+            const phone = document.getElementById('phone').value;
+            const screenshotFile = document.getElementById('screenshot').files[0];
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const submitBtn = document.getElementById('submit-btn');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            if (!phone || !screenshotFile) {
+                alert(currentLanguage === 'en' ? 'Please fill all fields and upload screenshot' : 'እባክዎ ሁሉንም መስኮች ይሙሉ እና ቅጽበታዊ ገጽ እይታ ይስቀሉ');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+
+            let paymentAccount = paymentMethod === 'ton' ? TON_ADDRESS : CBE_ACCOUNT;
+            let accountLabel = paymentMethod === 'ton' ? 'TON Address' : 'CBE Account';
+
+            const messageText = `
+🔔 <b>NEW PAYMENT NOTIFICATION</b>
+
+🛠 <b>Service:</b> ${selectedService.name}
+💵 <b>Price:</b> ${selectedService.price}
+📱 <b>Contact:</b> ${phone}
+💳 <b>Method:</b> ${paymentMethod.toUpperCase()}
+🏦 <b>${accountLabel}:</b> ${paymentAccount}
+👤 <b>Account Name:</b> ${CBE_ACCOUNT_NAME}
+⏰ <b>Time:</b> ${new Date().toLocaleString()}
+🌐 <b>Language:</b> ${currentLanguage.toUpperCase()}
+
+<i>Please verify payment screenshot below.</i>
+            `.trim();
+
+            const messageSent = await sendToTelegram(messageText);
+
+            if (messageSent) {
+                const photoSent = await sendPhotoToTelegram(screenshotFile, `Payment proof for ${selectedService.name} from ${phone}`);
+
+                if (photoSent) {
+                    document.getElementById('payment-form').style.display = 'none';
+                    const successMsg = document.getElementById('success-message');
+                    successMsg.style.display = 'block';
+                    successMsg.textContent = languages[currentLanguage].successMsg;
+
+                    setTimeout(() => {
+                        closeModal();
+                        document.getElementById('payment-form').style.display = 'block';
+                        document.getElementById('success-message').style.display = 'none';
+                        submitBtn.disabled = false;
+                        loadingSpinner.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert(currentLanguage === 'en' ? 'Error sending screenshot. Try again.' : 'ቅጽበታዊ ገጽ እይታ በመላክ ላይ ስህተት። እንደገና ይሞክሩ።');
+                    submitBtn.disabled = false;
+                    loadingSpinner.style.display = 'none';
+                }
+            } else {
+                alert(currentLanguage === 'en' ? 'Error submitting. Try again.' : 'በማስገባት ላይ ስህተት። እንደገና ይሞክሩ።');
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('payment-modal')) {
+                closeModal();
+            }
+        }
+
+        // Initialize
+        generateServices();
+        hidePaymentInfo();
+    </script>
+</body>
+</html>
